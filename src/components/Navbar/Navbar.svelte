@@ -1,10 +1,18 @@
+<style>
+  .brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    font-family: Monaco;
+  }
+</style>
+
 <div class="hero-head">
   <header class="navbar">
     <div class="container">
-      <div class="navbar-brand">
-        <a href="/">Contract Originator</a>
-      </div>
       <div id="navbarMenuHeroC" class="navbar-menu">
+        <div class="navbar-start">
+          <a href="/" class="brand navbar-item">Contract Originator</a>
+        </div>
         <div class="navbar-end">
           <a
             href="https://www.tezostaquito.io"

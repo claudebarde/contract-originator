@@ -1,7 +1,21 @@
 <script>
   import Navbar from "./components/Navbar/Navbar.svelte";
   import Body from "./components/Body/Body.svelte";
+  import taquitoPic from "../public/images/taquito.png";
 </script>
+
+<style>
+  .hero {
+    background-color: #ebf8ff;
+  }
+
+  .footer-pic {
+    height: 30px;
+    float: right;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+</style>
 
 <section class="hero is-fullheight">
   <!-- Hero head: will stick at the top -->
@@ -12,29 +26,6 @@
 
   <!-- Hero footer: will stick at the bottom -->
   <div class="hero-foot">
-    <nav class="tabs is-boxed is-fullwidth">
-      <div class="container">
-        <ul>
-          <li class="is-active">
-            <a>Overview</a>
-          </li>
-          <li>
-            <a>Modifiers</a>
-          </li>
-          <li>
-            <a>Grid</a>
-          </li>
-          <li>
-            <a>Elements</a>
-          </li>
-          <li>
-            <a>Components</a>
-          </li>
-          <li>
-            <a>Layout</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
+    <img src={taquitoPic} alt="Built with Taquito" class="footer-pic" />
   </div>
 </section>

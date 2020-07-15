@@ -3,8 +3,8 @@ import { writable } from "svelte/store";
 const defaultState = {
   network: undefined,
   userAddress: undefined,
-  Tezos: undefined,
-  encodedMichelson: undefined
+  encodedMichelson: undefined,
+  storageStructure: undefined
 };
 
 const store = () => {
@@ -25,6 +25,9 @@ const store = () => {
     },
     updateEncodedMichelson: code => {
       update(currentStore => ({ ...currentStore, encodedMichelson: code }));
+    },
+    updateStorageStructure: storage => {
+      update(currentStore => ({ ...currentStore, storageStructure: storage }));
     }
   };
 };

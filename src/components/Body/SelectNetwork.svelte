@@ -1,6 +1,8 @@
 <script>
   import store from "../../store";
 
+  export let Tezos;
+
   let customNetwork = "";
 </script>
 
@@ -29,19 +31,28 @@
       <a
         href="/"
         class="dropdown-item"
-        on:click|preventDefault={() => store.updateNetwork('mainnet')}>
+        on:click|preventDefault={async () => {
+          store.updateNetwork('mainnet');
+          await Tezos.setProvider({ rpc: 'https://mainnet.SmartPy.io' });
+        }}>
         Mainnet
       </a>
       <a
         href="/"
         class="dropdown-item"
-        on:click|preventDefault={() => store.updateNetwork('carthagenet')}>
+        on:click|preventDefault={async () => {
+          store.updateNetwork('carthagenet');
+          await Tezos.setProvider({ rpc: 'https://carthagenet.SmartPy.io' });
+        }}>
         Carthagenet
       </a>
       <a
         href="/"
         class="dropdown-item"
-        on:click|preventDefault={() => store.updateNetwork('http:localhost:8732')}>
+        on:click|preventDefault={async () => {
+          store.updateNetwork('http://localhost:8732');
+          await Tezos.setProvider({ rpc: 'http://localhost:8732' });
+        }}>
         Truffle default
       </a>
       <div class="dropdown-item">
@@ -50,9 +61,10 @@
           class="input is-small"
           bind:value={customNetwork}
           placeholder="Custom network"
-          on:keyup={event => {
+          on:keyup={async event => {
             if (event.which == 13 || event.keyCode == 13) {
               store.updateNetwork(customNetwork);
+              await Tezos.setProvider({ rpc: customNetwork });
               customNetwork = '';
             }
           }} />

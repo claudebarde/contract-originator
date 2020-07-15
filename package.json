@@ -19,6 +19,8 @@
     "@taquito/beacon-wallet": "^6.3.3-beta.0",
     "@taquito/michelson-encoder": "^6.3.3-beta.0",
     "@taquito/taquito": "^6.3.2-beta.0",
+    "@taquito/tezbridge-signer": "^6.3.3-beta.0",
+    "@taquito/tezbridge-wallet": "^6.3.3-beta.0",
     "@thanos-wallet/dapp": "^0.5.0",
     "public": "^0.1.5"
   }

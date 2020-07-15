@@ -1,5 +1,5 @@
 <script>
-  import { Tezos } from "@taquito/taquito";
+  import { TezBridgeWallet } from "@taquito/tezbridge-wallet";
   import { BeaconWallet } from "@taquito/beacon-wallet";
   import { ThanosWallet } from "@thanos-wallet/dapp";
   import store from "../../store.js";
@@ -7,16 +7,18 @@
   import beaconIcon from "../../../public/images/beacon-icon.png";
   import thanosIcon from "../../../public/images/thanos-icon.png";
 
+  export let Tezos;
+
   const initTezBridgeWallet = async () => {
     // connect with tezbridge
     try {
       if (!$store.network) throw "No selected network";
 
-      const signer = new TezBridgeSigner();
-      Tezos.setSignerProvider(new TezBridgeSigner());
-      const userAddress = await signer.publicKeyHash();
+      const wallet = new TezBridgeWallet();
+      await Tezos.setProvider({ wallet });
+      const userAddress = await wallet.getPKH();
       // updates user address
-      status.updateUserAddress(userAddress);
+      store.updateUserAddress(userAddress);
     } catch (error) {
       console.log(error);
     }
@@ -50,7 +52,7 @@
               : "custom"
         }
       });
-      Tezos.setWalletProvider(wallet);
+      await Tezos.setWalletProvider(wallet);
       const userAddress = wallet.permissions.address;
       store.updateUserAddress(userAddress);
     } catch (error) {
@@ -74,7 +76,7 @@
           ? $store.network
           : "sandbox"
       );
-      Tezos.setWalletProvider(wallet);
+      await Tezos.setWalletProvider(wallet);
 
       store.updateUserAddress(wallet.pkh);
     } catch (err) {
