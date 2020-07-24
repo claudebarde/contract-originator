@@ -1,5 +1,5 @@
 {
-  "name": "svelte-template-parcel",
+  "name": "michelson-parser-originator",
   "version": "1.0.0",
   "license": "MIT",
   "browserslist": [
@@ -10,10 +10,13 @@
     "build": "parcel build public/index.html"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-typescript": "^7.10.4",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-svelte": "^4.0.4",
     "sass": "^1.23.0",
-    "svelte": "^3.12.1"
+    "svelte": "^3.12.1",
+    "typescript": "^3.9.6"
   },
   "dependencies": {
     "@taquito/beacon-wallet": "^6.3.3-beta.0",

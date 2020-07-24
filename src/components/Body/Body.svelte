@@ -5,9 +5,12 @@
   import ConnectWallet from "../Wallets/ConnectWallet.svelte";
   import SelectNetwork from "./SelectNetwork.svelte";
   import OriginateModal from "./OriginateModal.svelte";
+  import StackTraceAccordion from "./StackTraceAccordion.svelte";
   import store from "../../store";
+  import generateDefaultStorage from "../../utils/generateDefaultStorage.ts";
+  import typechecker from "../../parser/index.ts";
 
-  let rawMichelson = `
+  /*let rawMichelson = `
 storage (big_map :ledger address nat) ;
 parameter (pair (address %to) (nat %tokens)) ;
 code {
@@ -85,14 +88,39 @@ code {
             PAIR ;
         }
         { PUSH string "UNKNOWNSPENDER" ; FAILWITH } ;
-}`;
+}`;*/
+  let rawMichelson = `
+parameter int ;
+storage int ;
+code {
+  DUP ;
+  CAR ;
+  SWAP ;
+  CDR ;
+  ADD ;
+  PUSH int 6;
+  SWAP;
+  SUB;
+  NIL operation ;
+  PAIR
+}
+`;
   let michelsonOutput = "";
   let originateModal = false;
+  let michelsonAction = "typecheck"; // typecheck | encode
+  let stackTraces = [];
+  let initParameter = "";
+  let initStorage = "";
 
   const encode = () => {
+    michelsonAction = "encode";
     try {
       const parser = new Parser();
-      const parsedMichelson = JSON.stringify(parser.parseScript(rawMichelson));
+      const parsedMichelson = JSON.stringify(
+        parser.parseScript(rawMichelson),
+        null,
+        2
+      );
       store.updateEncodedMichelson(parsedMichelson);
       michelsonOutput = parsedMichelson;
       // generates storage structure
@@ -101,11 +129,19 @@ code {
         .find(el => el.prim === "storage").args[0];
       const schema = new encoder.Schema(storage);
       const storageStructure = schema.ExtractSchema();
-      console.log(storageStructure);
       store.updateStorageStructure(storageStructure);
+      generateDefaultStorage(storageStructure);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const typecheck = async () => {
+    // typecheck Michelson
+    michelsonAction = "typecheck";
+    stackTraces = [
+      ...(await typechecker(rawMichelson, initParameter, initStorage))
+    ];
   };
 </script>
 
@@ -136,6 +172,9 @@ code {
     <div class="columns">
       <div class="column is-full">
         <div class="buttons is-centered">
+          <button class="button is-light" on:click={typecheck}>
+            Typecheck
+          </button>
           <button class="button is-link" on:click={encode}>Encode</button>
           <SelectNetwork {Tezos} />
           {#if $store.network && $store.userAddress}
@@ -158,8 +197,17 @@ code {
         <textarea id="michelson-editor" bind:value={rawMichelson} />
       </div>
       <div class="column is-half michelson-column">
-        <h2 class="title is-5">Michelson Output</h2>
-        <textarea id="michelson-output" bind:value={michelsonOutput} />
+        {#if michelsonAction === 'typecheck'}
+          <StackTraceAccordion
+            {stackTraces}
+            {initParameter}
+            {initStorage}
+            on:updateParameter={event => (initParameter = event.detail)}
+            on:updateStorage={event => (initStorage = event.detail)} />
+        {:else if michelsonAction === 'encode'}
+          <h2 class="title is-5">Michelson Output</h2>
+          <textarea id="michelson-output" bind:value={michelsonOutput} />
+        {/if}
       </div>
     </div>
   </div>

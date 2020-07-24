@@ -118,18 +118,27 @@
         <br />
         <div>
           <p>Storage structure:</p>
-          <p>{JSON.stringify($store.storageStructure)}</p>
+          <div>
+            <pre>{JSON.stringify($store.storageStructure, null, 2)}</pre>
+          </div>
         </div>
+        <br />
         <textarea bind:value={defaultStorage} />
       {/if}
     </section>
     <footer class="modal-card-foot">
-      <button
-        class="button is-success"
-        class:loading
-        on:click={originateContract}>
-        Originate
-      </button>
+      {#if !originated}
+        <button
+          class="button is-success"
+          class:is-loading={loading}
+          on:click={originateContract}>
+          Originate
+        </button>
+      {:else}
+        <button class="button is-success" on:click={() => dispatch('close')}>
+          Success!
+        </button>
+      {/if}
       {#if !loading}
         <button class="button" on:click={() => dispatch('close')}>
           Cancel

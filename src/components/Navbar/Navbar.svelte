@@ -11,7 +11,9 @@
     <div class="container">
       <div id="navbarMenuHeroC" class="navbar-menu">
         <div class="navbar-start">
-          <a href="/" class="brand navbar-item">Contract Originator</a>
+          <a href="/" class="brand navbar-item">
+            Michelson Typechecker & Originator
+          </a>
         </div>
         <div class="navbar-end">
           <a
