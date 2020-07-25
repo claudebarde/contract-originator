@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import { Parser } from "@taquito/michel-codec";
   import * as encoder from "@taquito/michelson-encoder";
   import { Tezos } from "@taquito/taquito";
@@ -9,6 +10,7 @@
   import store from "../../store";
   import generateDefaultStorage from "../../utils/generateDefaultStorage.ts";
   import typechecker from "../../parser/index.ts";
+  import { create as CodeMirror } from "../../codemirror";
 
   /*let rawMichelson = `
 storage (big_map :ledger address nat) ;
@@ -89,20 +91,19 @@ code {
         }
         { PUSH string "UNKNOWNSPENDER" ; FAILWITH } ;
 }`;*/
-  let rawMichelson = `
-parameter int ;
+  let rawMichelson = `parameter int ;
 storage int ;
 code {
-  DUP ;
-  CAR ;
-  SWAP ;
-  CDR ;
-  ADD ;
-  PUSH int 6;
-  SWAP;
-  SUB;
-  NIL operation ;
-  PAIR
+    DUP ;
+    CAR ;
+    SWAP ;
+    CDR ;
+    ADD ;
+    PUSH int 6;
+    SWAP;
+    SUB;
+    NIL operation ;
+    PAIR
 }
 `;
   let michelsonOutput = "";
@@ -111,6 +112,7 @@ code {
   let stackTraces = [];
   let initParameter = "";
   let initStorage = "";
+  let liveCoding = true;
 
   const encode = () => {
     michelsonAction = "encode";
@@ -143,6 +145,21 @@ code {
       ...(await typechecker(rawMichelson, initParameter, initStorage))
     ];
   };
+
+  onMount(() => {
+    // init code mirror
+    const editor = CodeMirror().fromTextArea(
+      document.getElementById("michelson-editor"),
+      {
+        lineNumbers: true
+      }
+    );
+    editor.setSize("100%", "80%");
+    editor.on("change", event => {
+      rawMichelson = editor.getValue();
+      typecheck();
+    });
+  });
 </script>
 
 <style>
@@ -194,7 +211,14 @@ code {
     <div class="columns michelson-column">
       <div class="column is-half michelson-column">
         <h2 class="title is-5">Michelson Editor</h2>
-        <textarea id="michelson-editor" bind:value={rawMichelson} />
+        <textarea
+          id="michelson-editor"
+          bind:value={rawMichelson}
+          on:keyup={event => {
+            if (liveCoding) {
+              typecheck();
+            }
+          }} />
       </div>
       <div class="column is-half michelson-column">
         {#if michelsonAction === 'typecheck'}
@@ -202,8 +226,10 @@ code {
             {stackTraces}
             {initParameter}
             {initStorage}
+            {liveCoding}
             on:updateParameter={event => (initParameter = event.detail)}
-            on:updateStorage={event => (initStorage = event.detail)} />
+            on:updateStorage={event => (initStorage = event.detail)}
+            on:liveCoding={event => (liveCoding = event.detail)} />
         {:else if michelsonAction === 'encode'}
           <h2 class="title is-5">Michelson Output</h2>
           <textarea id="michelson-output" bind:value={michelsonOutput} />

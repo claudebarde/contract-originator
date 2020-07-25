@@ -60,6 +60,7 @@ export default async (
   const instructions: string[] = code
     .trim()
     .split(";")
+    .filter(el => el)
     .map(instr => instr.trim());
   // formats init parameter and storage
   let [initParameterType, initParameterValue] = initParameter.split(" ");
