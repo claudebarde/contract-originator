@@ -206,6 +206,25 @@ code {
     border: solid 1px lightgrey;
     border-radius: 5px;
   }
+
+  .files-list {
+    list-style-position: inside;
+  }
+  .files-list li {
+    display: inline-block;
+    background-color: white;
+    padding: 7px 15px;
+    border: solid 1px #a0aec0;
+    border-top: none;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .active-file {
+    background-color: #a0aec0 !important;
+    color: white;
+  }
 </style>
 
 <div class="hero-body">
@@ -236,6 +255,22 @@ code {
       <div class="column is-half michelson-column">
         <h2 class="title is-5">Michelson Editor</h2>
         <textarea id="michelson-editor" bind:value={rawMichelson} />
+        <div>
+          <ul class="files-list">
+            <li class="active-file">
+              <i class="far fa-file-code" />
+              <span>Main.tz</span>
+            </li>
+            <li>
+              <i class="far fa-file-code" />
+              <span>Test.tz</span>
+            </li>
+            <li>
+              <i class="far fa-plus-square" />
+              <span>New</span>
+            </li>
+          </ul>
+        </div>
       </div>
       <div class="column is-half michelson-column">
         {#if michelsonAction === 'typecheck'}
