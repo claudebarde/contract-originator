@@ -157,7 +157,9 @@ code {
     editor.setSize("100%", "80%");
     editor.on("change", event => {
       rawMichelson = editor.getValue();
-      typecheck();
+      if (liveCoding) {
+        typecheck();
+      }
     });
   });
 </script>
@@ -171,7 +173,6 @@ code {
     height: 100%;
   }
 
-  #michelson-editor,
   #michelson-output {
     height: 80%;
     width: 100%;
@@ -211,14 +212,7 @@ code {
     <div class="columns michelson-column">
       <div class="column is-half michelson-column">
         <h2 class="title is-5">Michelson Editor</h2>
-        <textarea
-          id="michelson-editor"
-          bind:value={rawMichelson}
-          on:keyup={event => {
-            if (liveCoding) {
-              typecheck();
-            }
-          }} />
+        <textarea id="michelson-editor" bind:value={rawMichelson} />
       </div>
       <div class="column is-half michelson-column">
         {#if michelsonAction === 'typecheck'}
