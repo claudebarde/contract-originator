@@ -1,5 +1,6 @@
 import CodeMirror from "./lib/codemirror";
 import simple from "./lib/simple";
+import activeLine from "./lib/active-line";
 
 export function create() {
   CodeMirror.defineSimpleMode("michelson", {

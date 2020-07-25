@@ -4,7 +4,9 @@ const defaultState = {
   network: undefined,
   userAddress: undefined,
   encodedMichelson: undefined,
-  storageStructure: undefined
+  storageStructure: undefined,
+  editor: undefined,
+  codeStart: 0
 };
 
 const store = () => {
@@ -28,6 +30,12 @@ const store = () => {
     },
     updateStorageStructure: storage => {
       update(currentStore => ({ ...currentStore, storageStructure: storage }));
+    },
+    updateEditor: editor => {
+      update(currentStore => ({ ...currentStore, editor }));
+    },
+    updateCodeStart: start => {
+      update(currentStore => ({ ...currentStore, codeStart: start }));
     }
   };
 };

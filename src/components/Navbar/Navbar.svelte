@@ -1,8 +1,16 @@
+<script>
+  import logo from "../../../public/images/under-construction-80.png";
+</script>
+
 <style>
   .brand {
     font-weight: bold;
     font-size: 1.5rem;
     font-family: Monaco;
+  }
+
+  .logo {
+    height: 50px;
   }
 </style>
 
@@ -11,6 +19,7 @@
     <div class="container">
       <div id="navbarMenuHeroC" class="navbar-menu">
         <div class="navbar-start">
+          <img src={logo} alt="under construction" class="logo" />
           <a href="/" class="brand navbar-item">
             Michelson Typechecker & Originator
           </a>

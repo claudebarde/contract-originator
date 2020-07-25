@@ -3,14 +3,36 @@
   import { slide } from "svelte/transition";
   import doc from "../../parser/res_michelson.json";
   import StackTable from "./StackTable.svelte";
+  import store from "../../store";
 
   export let stackTraces, initParameter, initStorage, liveCoding;
 
   const dispatch = createEventDispatcher();
   let activeElement = undefined;
+  let errorLineNumber = undefined;
 
   $: if (stackTraces) {
     activeElement = undefined;
+
+    if (
+      stackTraces.length > 0 &&
+      stackTraces[stackTraces.length - 1].result == "error"
+    ) {
+      errorLineNumber =
+        parseInt($store.codeStart) + parseInt(stackTraces.length) - 1;
+      $store.editor.addLineClass(errorLineNumber, "background", "error-line");
+    } else if (
+      stackTraces.length > 0 &&
+      stackTraces[stackTraces.length - 1].result === "success" &&
+      errorLineNumber
+    ) {
+      $store.editor.removeLineClass(
+        errorLineNumber,
+        "background",
+        "error-line"
+      );
+      errorLineNumber = undefined;
+    }
   }
 </script>
 

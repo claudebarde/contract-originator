@@ -152,15 +152,38 @@ code {
       document.getElementById("michelson-editor"),
       {
         lineNumbers: true
+        //styleActiveLine: true
       }
     );
     editor.setSize("100%", "80%");
+    /*editor.markText(
+      { line: 0, ch: 0 },
+      { line: 0, ch: editor.getLine(0).length },
+      { css: "background-color: #fe3" }
+    );*/
     editor.on("change", event => {
       rawMichelson = editor.getValue();
+      // finds line number where Michelson code starts
+      let found = false;
+      editor.eachLine(line => {
+        const text = line.text.trim();
+        if (
+          text[text.length - 1] === ";" &&
+          !text.includes("parameter") &&
+          !text.includes("storage") &&
+          !text.includes("code") &&
+          !found
+        ) {
+          found = true;
+          store.updateCodeStart(editor.getLineNumber(line));
+        }
+      });
       if (liveCoding) {
         typecheck();
       }
     });
+
+    store.updateEditor(editor);
   });
 </script>
 
