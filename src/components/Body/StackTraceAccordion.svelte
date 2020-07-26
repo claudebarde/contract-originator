@@ -5,17 +5,40 @@
   import StackTable from "./StackTable.svelte";
   import store from "../../store";
 
-  export let stackTraces, initParameter, initStorage, liveCoding;
+  export let stackTraces,
+    initParameter,
+    initStorage,
+    liveCoding,
+    validationError;
 
   const dispatch = createEventDispatcher();
   let activeElement = undefined;
   let errorLineNumber = undefined;
 
+  const checkEndOfExecution = (firstEl, lastEl) => {
+    if (!firstEl || !lastEl) return false;
+
+    if (
+      lastEl.type === "pair" &&
+      lastEl.elements.length === 2 &&
+      lastEl.elements[0] &&
+      lastEl.elements[1] &&
+      firstEl.elements[1] &&
+      lastEl.elements[0].type === "list" &&
+      lastEl.elements[0].value === "operation" &&
+      lastEl.elements[1].type === firstEl.elements[1].type
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   $: if (stackTraces) {
     activeElement = undefined;
 
     if (
-      stackTraces.length > 0 &&
+      stackTraces.filter(trace => trace.result !== "error").length > 0 &&
       stackTraces[stackTraces.length - 1].result == "error"
     ) {
       errorLineNumber =
@@ -26,11 +49,9 @@
       stackTraces[stackTraces.length - 1].result === "success" &&
       errorLineNumber
     ) {
-      $store.editor.removeLineClass(
-        errorLineNumber,
-        "background",
-        "error-line"
-      );
+      $store.editor.eachLine(line => {
+        $store.editor.removeLineClass(line, "background", "error-line");
+      });
       errorLineNumber = undefined;
     }
   }
@@ -95,6 +116,7 @@
         <input
           type="text"
           class="input is-small"
+          class:is-danger={validationError && validationError.param}
           placeholder="Init parameter"
           value={initParameter}
           on:change={event => dispatch('updateParameter', event.target.value)} />
@@ -103,6 +125,7 @@
         <input
           type="text"
           class="input is-small"
+          class:is-danger={validationError && validationError.storage}
           placeholder="Init storage"
           value={initStorage}
           on:change={event => dispatch('updateStorage', event.target.value)} />
@@ -117,6 +140,18 @@
         <label for="live-coding">Live</label>
       </div>
     </div>
+    {#if validationError}
+      <div class="message is-danger is-small">
+        <div class="message-body">
+          {#if validationError.storage}
+            <span>Storage: {validationError.storage}</span>
+          {/if}
+          {#if validationError.param}
+            <span>Parameter: {validationError.param}</span>
+          {/if}
+        </div>
+      </div>
+    {/if}
     {#if liveCoding && stackTraces.length > 0 && stackTraces[stackTraces.length - 1].result !== 'error'}
       {#if stackTraces.length > 1}
         <div class="columns">
@@ -151,8 +186,9 @@
       <button
         class="accordion"
         class:active={activeElement === index}
-        class:has-background-success={trace.result === 'success'}
+        class:has-background-success={trace.result === 'success' && (index !== stackTraces.length - 1 || !checkEndOfExecution(stackTraces[0].element, trace.element))}
         class:has-background-danger={trace.result === 'error'}
+        class:has-background-info={trace.result === 'success' && index === stackTraces.length - 1 && checkEndOfExecution(stackTraces[0].element, trace.element)}
         on:click={() => {
           if (activeElement !== index) {
             activeElement = index;

@@ -9,6 +9,7 @@
   import StackTraceAccordion from "./StackTraceAccordion.svelte";
   import store from "../../store";
   import generateDefaultStorage from "../../utils/generateDefaultStorage.ts";
+  import validateParamStorage from "../../utils/validateParamStorage.ts";
   import typechecker from "../../parser/index.ts";
   import { create as CodeMirror } from "../../codemirror";
 
@@ -90,7 +91,7 @@ code {
             PAIR ;
         }
         { PUSH string "UNKNOWNSPENDER" ; FAILWITH } ;
-}`;*/
+}`;
   let rawMichelson = `parameter int ;
 storage int ;
 code {
@@ -105,7 +106,8 @@ code {
     NIL operation ;
     PAIR
 }
-`;
+`;*/
+  let rawMichelson = "";
   let michelsonOutput = "";
   let originateModal = false;
   let michelsonAction = "typecheck"; // typecheck | encode
@@ -113,6 +115,8 @@ code {
   let initParameter = "";
   let initStorage = "";
   let liveCoding = true;
+  let validationError = undefined;
+  let michelsonFiles = [];
 
   const encode = () => {
     michelsonAction = "encode";
@@ -141,9 +145,20 @@ code {
   const typecheck = async () => {
     // typecheck Michelson
     michelsonAction = "typecheck";
-    stackTraces = [
-      ...(await typechecker(rawMichelson, initParameter, initStorage))
-    ];
+    const validation = validateParamStorage(
+      rawMichelson,
+      initParameter,
+      initStorage
+    );
+    if (validation.result) {
+      validationError = undefined;
+      stackTraces = [
+        ...(await typechecker(rawMichelson, initParameter, initStorage))
+      ];
+    } else {
+      stackTraces = [];
+      validationError = validation.error;
+    }
   };
 
   onMount(() => {
@@ -184,6 +199,18 @@ code {
     });
 
     store.updateEditor(editor);
+
+    // checks for files in local storage
+    if (window.localStorage) {
+      const filesList = JSON.parse(
+        window.localStorage.getItem("michelson-files")
+      );
+      if (filesList && Object.keys(fileList).length > 0) {
+        Object.keys(fileList).forEach(file => {
+          michelsonFiles = [...michelsonFiles, file];
+        });
+      }
+    }
   });
 </script>
 
@@ -222,8 +249,8 @@ code {
     cursor: pointer;
   }
   .active-file {
-    background-color: #a0aec0 !important;
-    color: white;
+    font-style: italic;
+    background-color: #edf2f7 !important;
   }
 </style>
 
@@ -257,17 +284,19 @@ code {
         <textarea id="michelson-editor" bind:value={rawMichelson} />
         <div>
           <ul class="files-list">
-            <li class="active-file">
-              <i class="far fa-file-code" />
-              <span>Main.tz</span>
-            </li>
-            <li>
-              <i class="far fa-file-code" />
-              <span>Test.tz</span>
-            </li>
+            {#each michelsonFiles as file}
+              <li>
+                <i class="far fa-file-code" />
+                <span>{file.name}.tz</span>
+              </li>
+            {/each}
             <li>
               <i class="far fa-plus-square" />
               <span>New</span>
+            </li>
+            <li>
+              <i class="far fa-folder-open" />
+              <span>Open</span>
             </li>
           </ul>
         </div>
@@ -279,6 +308,7 @@ code {
             {initParameter}
             {initStorage}
             {liveCoding}
+            {validationError}
             on:updateParameter={event => (initParameter = event.detail)}
             on:updateStorage={event => (initStorage = event.detail)}
             on:liveCoding={event => (liveCoding = event.detail)} />
