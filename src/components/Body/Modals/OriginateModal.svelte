@@ -2,7 +2,7 @@
   import { MichelsonMap } from "@taquito/taquito";
   import { fly, fade } from "svelte/transition";
   import { createEventDispatcher } from "svelte";
-  import store from "../../store.js";
+  import store from "../../../store";
 
   export let Tezos;
 

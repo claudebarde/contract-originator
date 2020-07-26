@@ -182,6 +182,12 @@
     {/if}
   </div>
   <div class="instructions-accordion">
+    {#if stackTraces.length > 2 && checkEndOfExecution(stackTraces[0].element, stackTraces[stackTraces.length - 1].element)}
+      <div>
+        <p>End of execution</p>
+        <p>Number of instructions: {stackTraces.length}</p>
+      </div>
+    {/if}
     {#each stackTraces as trace, index}
       <button
         class="accordion"

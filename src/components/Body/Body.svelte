@@ -5,13 +5,14 @@
   import { Tezos } from "@taquito/taquito";
   import ConnectWallet from "../Wallets/ConnectWallet.svelte";
   import SelectNetwork from "./SelectNetwork.svelte";
-  import OriginateModal from "./OriginateModal.svelte";
+  import OriginateModal from "./Modals/OriginateModal.svelte";
   import StackTraceAccordion from "./StackTraceAccordion.svelte";
   import store from "../../store";
   import generateDefaultStorage from "../../utils/generateDefaultStorage.ts";
   import validateParamStorage from "../../utils/validateParamStorage.ts";
   import typechecker from "../../parser/index.ts";
   import { create as CodeMirror } from "../../codemirror";
+  import NewMichelsonFileModal from "./Modals/NewMichelsonFileModal.svelte";
 
   /*let rawMichelson = `
 storage (big_map :ledger address nat) ;
@@ -117,6 +118,7 @@ code {
   let liveCoding = true;
   let validationError = undefined;
   let michelsonFiles = [];
+  let newMichelsonFile = false;
 
   const encode = () => {
     michelsonAction = "encode";
@@ -143,6 +145,12 @@ code {
   };
 
   const typecheck = async () => {
+    if (
+      !rawMichelson.includes("parameter") ||
+      !rawMichelson.includes("storage") ||
+      !rawMichelson.includes("code")
+    )
+      return;
     // typecheck Michelson
     michelsonAction = "typecheck";
     const validation = validateParamStorage(
@@ -166,7 +174,9 @@ code {
     const editor = CodeMirror().fromTextArea(
       document.getElementById("michelson-editor"),
       {
-        lineNumbers: true
+        lineNumbers: true,
+        autoCloseBrackets: true,
+        theme: "eclipse"
         //styleActiveLine: true
       }
     );
@@ -193,6 +203,7 @@ code {
           store.updateCodeStart(editor.getLineNumber(line));
         }
       });
+      // typecheck code
       if (liveCoding) {
         typecheck();
       }
@@ -240,7 +251,7 @@ code {
   .files-list li {
     display: inline-block;
     background-color: white;
-    padding: 7px 15px;
+    padding: 5px 10px;
     border: solid 1px #a0aec0;
     border-top: none;
     border-bottom-left-radius: 5px;
@@ -284,17 +295,36 @@ code {
         <textarea id="michelson-editor" bind:value={rawMichelson} />
         <div>
           <ul class="files-list">
+            {#if $store.darkMode}
+              <li
+                class="is-size-7"
+                on:click={() => {
+                  $store.editor.setOption('theme', 'eclipse');
+                  store.changeDarkMode(false);
+                }}>
+                <i class="far fa-sun" />
+              </li>
+            {:else}
+              <li
+                class="is-size-7"
+                on:click={() => {
+                  $store.editor.setOption('theme', 'lucario');
+                  store.changeDarkMode(true);
+                }}>
+                <i class="far fa-moon" />
+              </li>
+            {/if}
             {#each michelsonFiles as file}
-              <li>
+              <li class="is-size-7">
                 <i class="far fa-file-code" />
                 <span>{file.name}.tz</span>
               </li>
             {/each}
-            <li>
+            <li class="is-size-7" on:click={() => (newMichelsonFile = true)}>
               <i class="far fa-plus-square" />
               <span>New</span>
             </li>
-            <li>
+            <li class="is-size-7">
               <i class="far fa-folder-open" />
               <span>Open</span>
             </li>
@@ -322,4 +352,7 @@ code {
 </div>
 {#if originateModal}
   <OriginateModal {Tezos} on:close={() => (originateModal = false)} />
+{/if}
+{#if newMichelsonFile}
+  <NewMichelsonFileModal on:close={() => (newMichelsonFile = false)} />
 {/if}

@@ -6,7 +6,8 @@ const defaultState = {
   encodedMichelson: undefined,
   storageStructure: undefined,
   editor: undefined,
-  codeStart: 0
+  codeStart: 0,
+  darkMode: false
 };
 
 const store = () => {
@@ -36,6 +37,9 @@ const store = () => {
     },
     updateCodeStart: start => {
       update(currentStore => ({ ...currentStore, codeStart: start }));
+    },
+    changeDarkMode: state => {
+      update(currentStore => ({ ...currentStore, darkMode: state }));
     }
   };
 };

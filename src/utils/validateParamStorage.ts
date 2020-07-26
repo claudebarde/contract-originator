@@ -12,6 +12,7 @@ export default (
   initParameter: string,
   initStorage: string
 ): Result => {
+  // if one of the arguments is empty
   if (!michelson || !initParameter || !initStorage) return { result: false };
 
   let validParam = false;
