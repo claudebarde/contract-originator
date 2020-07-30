@@ -71,7 +71,7 @@
   .instructions-accordion,
   .feedback {
     overflow: auto;
-    height: 50%;
+    height: 45%;
   }
 
   /* Style the buttons that are used to open and close the accordion panel */
@@ -180,6 +180,7 @@
       </div>
     {/if}
   </div>
+  <hr />
   <div class="instructions-accordion">
     {#if stackTraces.length > 2 && checkEndOfExecution(stackTraces[0].element, stackTraces[stackTraces.length - 1].element)}
       <div>

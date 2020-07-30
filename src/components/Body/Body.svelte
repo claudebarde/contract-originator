@@ -108,6 +108,8 @@ code {
     PAIR
 }
 `;*/
+  let openTemplatesDropdown = false;
+  let openActionsDropdown = false;
   let rawMichelson = "";
   let michelsonOutput = "";
   let originateModal = false;
@@ -169,6 +171,12 @@ code {
     }
   };
 
+  const loadCode = async address => {
+    const response = await fetch(address);
+    const code = await response.json();
+    $store.editor.setValue(code);
+  };
+
   onMount(() => {
     // init code mirror
     const editor = CodeMirror().fromTextArea(
@@ -226,8 +234,12 @@ code {
 </script>
 
 <style>
+  .hero-body {
+    flex-direction: column;
+  }
+
   .michelson-columns {
-    height: 80vh;
+    height: 70vh;
     width: 100%;
   }
 
@@ -264,6 +276,10 @@ code {
     font-style: italic;
     background-color: #edf2f7 !important;
   }
+
+  .menu-bar {
+    width: 100%;
+  }
 </style>
 
 <div class="hero-body">
@@ -289,7 +305,90 @@ code {
         </div>
       </div>
     </div> -->
-  <div class="columns michelson-columns">
+  <div class="menu-bar has-background-light">
+    <div class="dropdown" class:is-active={openTemplatesDropdown}>
+      <div class="dropdown-trigger">
+        <button
+          class="button is-light"
+          aria-haspopup="true"
+          aria-controls="dropdown-templates"
+          on:click={() => (openTemplatesDropdown = !openTemplatesDropdown)}>
+          <span>Templates</span>
+          <span class="icon is-small">
+            {#if openTemplatesDropdown}
+              <span class="icon is-small">
+                <i class="fas fa-angle-up" aria-hidden="true" />
+              </span>
+            {:else}
+              <span class="icon is-small">
+                <i class="fas fa-angle-down" aria-hidden="true" />
+              </span>
+            {/if}
+          </span>
+        </button>
+      </div>
+      <div
+        class="dropdown-menu"
+        id="dropdown-templates"
+        role="menu"
+        on:click={() => (openTemplatesDropdown = false)}>
+        <div class="dropdown-content">
+          <a href="#/" class="dropdown-item">Addition</a>
+          <a href="#/" class="dropdown-item">Euclidian division</a>
+          <a href="#/" class="dropdown-item">Strings concatenation</a>
+          <hr class="dropdown-divider" />
+          <a href="#/" class="dropdown-item">Lists</a>
+          <a href="#/" class="dropdown-item">Maps</a>
+          <hr class="dropdown-divider" />
+          <a
+            href="/"
+            class="dropdown-item"
+            target="_blank"
+            on:click|preventDefault={() => loadCode('https://api.better-call.dev/v1/contract/mainnet/KT1TUx83WuwtA2Ku1pi6A9AZqov7CZfYtLUS/code')}>
+            miniTez
+          </a>
+          <a
+            href="#/"
+            class="dropdown-item"
+            target="_blank"
+            on:click|preventDefault={() => loadCode('https://api.better-call.dev/v1/contract/carthagenet/KT1QaxSfGtgn86Lnhtu8PrkApQLiFt2SMEfr/code')}>
+            Fa1.2 token
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="dropdown" class:is-active={openActionsDropdown}>
+      <div class="dropdown-trigger">
+        <button
+          class="button is-light"
+          aria-haspopup="true"
+          aria-controls="dropdown-actions"
+          on:click={() => (openActionsDropdown = !openActionsDropdown)}>
+          <span>Actions</span>
+          {#if openActionsDropdown}
+            <span class="icon is-small">
+              <i class="fas fa-angle-up" aria-hidden="true" />
+            </span>
+          {:else}
+            <span class="icon is-small">
+              <i class="fas fa-angle-down" aria-hidden="true" />
+            </span>
+          {/if}
+        </button>
+      </div>
+      <div
+        class="dropdown-menu"
+        id="dropdown-actions"
+        role="menu"
+        on:click={() => (openActionsDropdown = false)}>
+        <div class="dropdown-content">
+          <a href="#/" class="dropdown-item">Typecheck</a>
+          <a href="#/" class="dropdown-item">Encode</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="columns is-gapless michelson-columns">
     <div class="column is-half michelson-column">
       <textarea id="michelson-editor" bind:value={rawMichelson} />
       <div>

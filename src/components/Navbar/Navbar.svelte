@@ -23,14 +23,13 @@
           <a href="/" class="brand navbar-item">Michelson Editor</a>
         </div>
         <div class="navbar-end">
-          <div class="navbar-item has-dropdown is-hoverable">
-            <a href="#/" class="navbar-link">Actions</a>
-
-            <div class="navbar-dropdown">
-              <a href="#/" class="dropdown-item">Typecheck</a>
-              <a href="#/" class="dropdown-item">Encode</a>
-            </div>
-          </div>
+          <a
+            href="https://www.tezostaquito.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="navbar-item">
+            <span>Taquito</span>
+          </a>
           <a
             href="https://www.github.com/claudebarde"
             target="_blank"
