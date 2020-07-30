@@ -292,43 +292,43 @@ code {
   <div class="columns michelson-columns">
     <div class="column is-half michelson-column">
       <textarea id="michelson-editor" bind:value={rawMichelson} />
-      <!-- <div>
-          <ul class="files-list">
-            {#if $store.darkMode}
-              <li
-                class="is-size-7"
-                on:click={() => {
-                  $store.editor.setOption('theme', 'eclipse');
-                  store.changeDarkMode(false);
-                }}>
-                <i class="far fa-sun" />
-              </li>
-            {:else}
-              <li
-                class="is-size-7"
-                on:click={() => {
-                  $store.editor.setOption('theme', 'lucario');
-                  store.changeDarkMode(true);
-                }}>
-                <i class="far fa-moon" />
-              </li>
-            {/if}
-            {#each michelsonFiles as file}
-              <li class="is-size-7">
-                <i class="far fa-file-code" />
-                <span>{file.name}.tz</span>
-              </li>
-            {/each}
-            <li class="is-size-7" on:click={() => (newMichelsonFile = true)}>
-              <i class="far fa-plus-square" />
-              <span>New</span>
+      <div>
+        <ul class="files-list">
+          {#if $store.darkMode}
+            <li
+              class="is-size-7"
+              on:click={() => {
+                $store.editor.setOption('theme', 'eclipse');
+                store.changeDarkMode(false);
+              }}>
+              <i class="far fa-sun" />
             </li>
+          {:else}
+            <li
+              class="is-size-7"
+              on:click={() => {
+                $store.editor.setOption('theme', 'lucario');
+                store.changeDarkMode(true);
+              }}>
+              <i class="far fa-moon" />
+            </li>
+          {/if}
+          {#each michelsonFiles as file}
             <li class="is-size-7">
-              <i class="far fa-folder-open" />
-              <span>Open</span>
+              <i class="far fa-file-code" />
+              <span>{file.name}.tz</span>
             </li>
-          </ul>
-        </div> -->
+          {/each}
+          <li class="is-size-7" on:click={() => (newMichelsonFile = true)}>
+            <i class="far fa-plus-square" />
+            <span>New</span>
+          </li>
+          <li class="is-size-7">
+            <i class="far fa-folder-open" />
+            <span>Open</span>
+          </li>
+        </ul>
+      </div>
     </div>
     <div class="column is-half michelson-column">
       {#if michelsonAction === 'typecheck'}
