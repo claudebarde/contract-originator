@@ -180,7 +180,7 @@ code {
         //styleActiveLine: true
       }
     );
-    editor.setSize("100%", "80%");
+    editor.setSize("100%", "100%");
     /*editor.markText(
       { line: 0, ch: 0 },
       { line: 0, ch: editor.getLine(0).length },
@@ -226,8 +226,9 @@ code {
 </script>
 
 <style>
-  .container {
-    height: 80vh !important;
+  .michelson-columns {
+    height: 80vh;
+    width: 100%;
   }
 
   .michelson-column {
@@ -235,7 +236,7 @@ code {
   }
 
   #michelson-output {
-    height: 80%;
+    height: 100%;
     width: 100%;
   }
 
@@ -266,8 +267,7 @@ code {
 </style>
 
 <div class="hero-body">
-  <div class="container">
-    <div class="columns">
+  <!-- <div class="columns">
       <div class="column is-full">
         <div class="buttons is-centered">
           <button class="button is-light" on:click={typecheck}>
@@ -288,12 +288,11 @@ code {
           </button>
         </div>
       </div>
-    </div>
-    <div class="columns michelson-column">
-      <div class="column is-half michelson-column">
-        <h2 class="title is-5">Michelson Editor</h2>
-        <textarea id="michelson-editor" bind:value={rawMichelson} />
-        <div>
+    </div> -->
+  <div class="columns michelson-columns">
+    <div class="column is-half michelson-column">
+      <textarea id="michelson-editor" bind:value={rawMichelson} />
+      <!-- <div>
           <ul class="files-list">
             {#if $store.darkMode}
               <li
@@ -329,24 +328,22 @@ code {
               <span>Open</span>
             </li>
           </ul>
-        </div>
-      </div>
-      <div class="column is-half michelson-column">
-        {#if michelsonAction === 'typecheck'}
-          <StackTraceAccordion
-            {stackTraces}
-            {initParameter}
-            {initStorage}
-            {liveCoding}
-            {validationError}
-            on:updateParameter={event => (initParameter = event.detail)}
-            on:updateStorage={event => (initStorage = event.detail)}
-            on:liveCoding={event => (liveCoding = event.detail)} />
-        {:else if michelsonAction === 'encode'}
-          <h2 class="title is-5">Michelson Output</h2>
-          <textarea id="michelson-output" bind:value={michelsonOutput} />
-        {/if}
-      </div>
+        </div> -->
+    </div>
+    <div class="column is-half michelson-column">
+      {#if michelsonAction === 'typecheck'}
+        <StackTraceAccordion
+          {stackTraces}
+          {initParameter}
+          {initStorage}
+          {liveCoding}
+          {validationError}
+          on:updateParameter={event => (initParameter = event.detail)}
+          on:updateStorage={event => (initStorage = event.detail)}
+          on:liveCoding={event => (liveCoding = event.detail)} />
+      {:else if michelsonAction === 'encode'}
+        <textarea id="michelson-output" bind:value={michelsonOutput} />
+      {/if}
     </div>
   </div>
 </div>

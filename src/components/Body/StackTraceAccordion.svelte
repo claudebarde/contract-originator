@@ -59,7 +59,7 @@
 
 <style>
   .stackTrace {
-    height: 80%;
+    height: 100%;
     width: 100%;
     padding: 10px;
     border: solid 1px lightgrey;
@@ -108,7 +108,6 @@
   }
 </style>
 
-<h2 class="title is-5">Michelson Typecheck</h2>
 <div class="stackTrace">
   <div class="feedback">
     <div class="columns is-vcentered">
