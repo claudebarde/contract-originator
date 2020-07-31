@@ -12,7 +12,8 @@
   import validateParamStorage from "../../utils/validateParamStorage.ts";
   import typechecker from "../../parser/index.ts";
   import { create as CodeMirror } from "../../codemirror";
-  import NewMichelsonFileModal from "./Modals/NewMichelsonFileModal.svelte";
+  import MenuBar from "./MenuBar.svelte";
+  import FileMenu from "./FilesMenu.svelte";
 
   /*let rawMichelson = `
 storage (big_map :ledger address nat) ;
@@ -108,8 +109,6 @@ code {
     PAIR
 }
 `;*/
-  let openTemplatesDropdown = false;
-  let openActionsDropdown = false;
   let rawMichelson = "";
   let michelsonOutput = "";
   let originateModal = false;
@@ -117,10 +116,7 @@ code {
   let stackTraces = [];
   let initParameter = "";
   let initStorage = "";
-  let liveCoding = true;
   let validationError = undefined;
-  let michelsonFiles = [];
-  let newMichelsonFile = false;
 
   const encode = () => {
     michelsonAction = "encode";
@@ -171,12 +167,6 @@ code {
     }
   };
 
-  const loadCode = async address => {
-    const response = await fetch(address);
-    const code = await response.json();
-    $store.editor.setValue(code);
-  };
-
   onMount(() => {
     // init code mirror
     const editor = CodeMirror().fromTextArea(
@@ -212,8 +202,31 @@ code {
         }
       });
       // typecheck code
-      if (liveCoding) {
+      if ($store.liveCoding) {
         typecheck();
+      }
+      // saves code in open file
+      if ($store.activeFile) {
+        // saves code in store
+        const michelsonFiles = $store.michelsonFiles.map(file => {
+          if (file.name === $store.activeFile) {
+            return { ...file, code: rawMichelson };
+          } else {
+            return file;
+          }
+        });
+        store.updateMichelsonFiles(michelsonFiles);
+        // saves code in localStorage
+        if (window.localStorage) {
+          const filesList = JSON.parse(
+            window.localStorage.getItem("michelson-files")
+          );
+          filesList[$store.activeFile] = rawMichelson;
+          window.localStorage.setItem(
+            "michelson-files",
+            JSON.stringify(filesList)
+          );
+        }
       }
     });
 
@@ -224,10 +237,16 @@ code {
       const filesList = JSON.parse(
         window.localStorage.getItem("michelson-files")
       );
-      if (filesList && Object.keys(fileList).length > 0) {
-        Object.keys(fileList).forEach(file => {
-          michelsonFiles = [...michelsonFiles, file];
+
+      if (filesList && Object.keys(filesList).length > 0) {
+        let michelsonFiles = [];
+        Object.keys(filesList).forEach(file => {
+          michelsonFiles = [
+            ...michelsonFiles,
+            { name: file, code: filesList[file], open: false, active: false }
+          ];
         });
+        store.updateMichelsonFiles(michelsonFiles);
       }
     }
   });
@@ -257,29 +276,6 @@ code {
     border: solid 1px lightgrey;
     border-radius: 5px;
   }
-
-  .files-list {
-    list-style-position: inside;
-  }
-  .files-list li {
-    display: inline-block;
-    background-color: white;
-    padding: 5px 10px;
-    border: solid 1px #a0aec0;
-    border-top: none;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    font-size: 0.8rem;
-    cursor: pointer;
-  }
-  .active-file {
-    font-style: italic;
-    background-color: #edf2f7 !important;
-  }
-
-  .menu-bar {
-    width: 100%;
-  }
 </style>
 
 <div class="hero-body">
@@ -305,129 +301,11 @@ code {
         </div>
       </div>
     </div> -->
-  <div class="menu-bar has-background-light">
-    <div class="dropdown" class:is-active={openTemplatesDropdown}>
-      <div class="dropdown-trigger">
-        <button
-          class="button is-light"
-          aria-haspopup="true"
-          aria-controls="dropdown-templates"
-          on:click={() => (openTemplatesDropdown = !openTemplatesDropdown)}>
-          <span>Templates</span>
-          <span class="icon is-small">
-            {#if openTemplatesDropdown}
-              <span class="icon is-small">
-                <i class="fas fa-angle-up" aria-hidden="true" />
-              </span>
-            {:else}
-              <span class="icon is-small">
-                <i class="fas fa-angle-down" aria-hidden="true" />
-              </span>
-            {/if}
-          </span>
-        </button>
-      </div>
-      <div
-        class="dropdown-menu"
-        id="dropdown-templates"
-        role="menu"
-        on:click={() => (openTemplatesDropdown = false)}>
-        <div class="dropdown-content">
-          <a href="#/" class="dropdown-item">Addition</a>
-          <a href="#/" class="dropdown-item">Euclidian division</a>
-          <a href="#/" class="dropdown-item">Strings concatenation</a>
-          <hr class="dropdown-divider" />
-          <a href="#/" class="dropdown-item">Lists</a>
-          <a href="#/" class="dropdown-item">Maps</a>
-          <hr class="dropdown-divider" />
-          <a
-            href="/"
-            class="dropdown-item"
-            target="_blank"
-            on:click|preventDefault={() => loadCode('https://api.better-call.dev/v1/contract/mainnet/KT1TUx83WuwtA2Ku1pi6A9AZqov7CZfYtLUS/code')}>
-            miniTez
-          </a>
-          <a
-            href="#/"
-            class="dropdown-item"
-            target="_blank"
-            on:click|preventDefault={() => loadCode('https://api.better-call.dev/v1/contract/carthagenet/KT1QaxSfGtgn86Lnhtu8PrkApQLiFt2SMEfr/code')}>
-            Fa1.2 token
-          </a>
-        </div>
-      </div>
-    </div>
-    <div class="dropdown" class:is-active={openActionsDropdown}>
-      <div class="dropdown-trigger">
-        <button
-          class="button is-light"
-          aria-haspopup="true"
-          aria-controls="dropdown-actions"
-          on:click={() => (openActionsDropdown = !openActionsDropdown)}>
-          <span>Actions</span>
-          {#if openActionsDropdown}
-            <span class="icon is-small">
-              <i class="fas fa-angle-up" aria-hidden="true" />
-            </span>
-          {:else}
-            <span class="icon is-small">
-              <i class="fas fa-angle-down" aria-hidden="true" />
-            </span>
-          {/if}
-        </button>
-      </div>
-      <div
-        class="dropdown-menu"
-        id="dropdown-actions"
-        role="menu"
-        on:click={() => (openActionsDropdown = false)}>
-        <div class="dropdown-content">
-          <a href="#/" class="dropdown-item">Typecheck</a>
-          <a href="#/" class="dropdown-item">Encode</a>
-        </div>
-      </div>
-    </div>
-  </div>
+  <MenuBar on:typecheck={typecheck} />
   <div class="columns is-gapless michelson-columns">
     <div class="column is-half michelson-column">
       <textarea id="michelson-editor" bind:value={rawMichelson} />
-      <div>
-        <ul class="files-list">
-          {#if $store.darkMode}
-            <li
-              class="is-size-7"
-              on:click={() => {
-                $store.editor.setOption('theme', 'eclipse');
-                store.changeDarkMode(false);
-              }}>
-              <i class="far fa-sun" />
-            </li>
-          {:else}
-            <li
-              class="is-size-7"
-              on:click={() => {
-                $store.editor.setOption('theme', 'lucario');
-                store.changeDarkMode(true);
-              }}>
-              <i class="far fa-moon" />
-            </li>
-          {/if}
-          {#each michelsonFiles as file}
-            <li class="is-size-7">
-              <i class="far fa-file-code" />
-              <span>{file.name}.tz</span>
-            </li>
-          {/each}
-          <li class="is-size-7" on:click={() => (newMichelsonFile = true)}>
-            <i class="far fa-plus-square" />
-            <span>New</span>
-          </li>
-          <li class="is-size-7">
-            <i class="far fa-folder-open" />
-            <span>Open</span>
-          </li>
-        </ul>
-      </div>
+      <FileMenu />
     </div>
     <div class="column is-half michelson-column">
       {#if michelsonAction === 'typecheck'}
@@ -435,11 +313,9 @@ code {
           {stackTraces}
           {initParameter}
           {initStorage}
-          {liveCoding}
           {validationError}
           on:updateParameter={event => (initParameter = event.detail)}
-          on:updateStorage={event => (initStorage = event.detail)}
-          on:liveCoding={event => (liveCoding = event.detail)} />
+          on:updateStorage={event => (initStorage = event.detail)} />
       {:else if michelsonAction === 'encode'}
         <textarea id="michelson-output" bind:value={michelsonOutput} />
       {/if}
@@ -448,7 +324,4 @@ code {
 </div>
 {#if originateModal}
   <OriginateModal {Tezos} on:close={() => (originateModal = false)} />
-{/if}
-{#if newMichelsonFile}
-  <NewMichelsonFileModal on:close={() => (newMichelsonFile = false)} />
 {/if}

@@ -7,7 +7,10 @@ const defaultState = {
   storageStructure: undefined,
   editor: undefined,
   codeStart: 0,
-  darkMode: false
+  darkMode: false,
+  liveCoding: true,
+  michelsonFiles: [],
+  activeFile: undefined
 };
 
 const store = () => {
@@ -40,6 +43,25 @@ const store = () => {
     },
     changeDarkMode: state => {
       update(currentStore => ({ ...currentStore, darkMode: state }));
+    },
+    updateLiveCoding: state => {
+      update(currentStore => ({ ...currentStore, liveCoding: state }));
+    },
+    updateMichelsonFiles: files => {
+      update(currentStore => ({ ...currentStore, michelsonFiles: files }));
+    },
+    changeActiveFile: fileName => {
+      update(currentStore => ({
+        ...currentStore,
+        activeFile: fileName,
+        michelsonFiles: currentStore.michelsonFiles.map(file => {
+          if (file.name === fileName) {
+            return { ...file, active: true };
+          } else {
+            return { ...file, active: false };
+          }
+        })
+      }));
     }
   };
 };

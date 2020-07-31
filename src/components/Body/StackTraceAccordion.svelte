@@ -110,8 +110,8 @@
 
 <div class="stackTrace">
   <div class="feedback">
-    <div class="columns is-vcentered">
-      <div class="column is-5">
+    <div class="columns is-vcentered" style="width:99%">
+      <div class="column is-6">
         <input
           type="text"
           class="input is-small"
@@ -120,7 +120,7 @@
           value={initParameter}
           on:change={event => dispatch('updateParameter', event.target.value)} />
       </div>
-      <div class="column is-5">
+      <div class="column is-6">
         <input
           type="text"
           class="input is-small"
@@ -128,15 +128,6 @@
           placeholder="Init storage"
           value={initStorage}
           on:change={event => dispatch('updateStorage', event.target.value)} />
-      </div>
-      <div class="column is-2">
-        <input
-          type="checkbox"
-          class="checkbox"
-          id="live-coding"
-          checked={liveCoding}
-          on:change={event => dispatch('liveCoding', event.target.checked)} />
-        <label for="live-coding">Live</label>
       </div>
     </div>
     {#if validationError}
