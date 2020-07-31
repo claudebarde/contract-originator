@@ -1,1 +1,1 @@
-# Originate contracts on the Tezos blockchain from Michelson code
+# Michelson editor with syntax highlighting, typechecking, file system, JSON formatting, origination
