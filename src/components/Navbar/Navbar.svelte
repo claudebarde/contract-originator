@@ -31,7 +31,7 @@
             <span>Taquito</span>
           </a>
           <a
-            href="https://www.github.com/claudebarde"
+            href="https://github.com/claudebarde/michelson-editor"
             target="_blank"
             rel="noopener noreferrer"
             class="navbar-item">

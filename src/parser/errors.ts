@@ -18,7 +18,8 @@ export default (error: string, val: any): ErrorMsg => {
       return {
         result: "error",
         msg: `The ${val} instruction does not exist`,
-        id: error
+        id: error,
+        value: val
       };
     case "UNAVAILABLE_OPCODE":
       return {

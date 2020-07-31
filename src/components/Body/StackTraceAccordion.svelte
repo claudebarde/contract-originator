@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import { slide } from "svelte/transition";
   import doc from "../../parser/res_michelson.json";
+  import prediction from "../../parser/prediction";
   import StackTable from "./StackTable.svelte";
   import store from "../../store";
 
@@ -167,6 +168,15 @@
       <div class="message is-small is-danger">
         <div class="message-body">
           <p>Error: {stackTraces.filter(el => el.result === 'error')[0].msg}</p>
+          {#if stackTraces.filter(el => el.result === 'error')[0].id === 'INVALID_OPCODE'}
+            {#await prediction(stackTraces.filter(el => el.result === 'error')[0].value)}
+              <!-- promise is pending -->
+            {:then value}
+              {#if value}
+                <p>Did you mean: "{value.opcode}"?</p>
+              {/if}
+            {/await}
+          {/if}
         </div>
       </div>
     {/if}

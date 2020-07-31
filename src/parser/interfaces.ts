@@ -29,6 +29,7 @@ export interface ErrorMsg {
   msg: string;
   id: string;
   stackState?: StackElement[];
+  value?: string;
 }
 
 export interface SuccessMsg {
