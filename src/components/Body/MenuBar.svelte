@@ -31,6 +31,43 @@ code {
 
     $store.editor.setValue(code);
   };
+
+  const closeCurrentFile = () => {
+    store.updateMichelsonFiles(
+      $store.michelsonFiles.map(file => {
+        if (file.name === $store.activeFile) {
+          return { ...file, open: false, active: false };
+        } else {
+          return { ...file, active: false };
+        }
+      })
+    );
+    store.changeActiveFile(undefined);
+    $store.editor.setValue("");
+  };
+
+  const deleteCurrentFile = () => {
+    // deletes file from store
+    const michelsonFiles = $store.michelsonFiles.filter(
+      file => file.name !== $store.activeFile
+    );
+    if (michelsonFiles.length === $store.michelsonFiles.length - 1) {
+      store.updateMichelsonFiles(michelsonFiles);
+      $store.editor.setValue("");
+      // deletes file from local storage
+      if (window.localStorage) {
+        const michFiles = JSON.parse(
+          window.localStorage.getItem("michelson-files")
+        );
+        delete michFiles[$store.activeFile];
+        window.localStorage.setItem(
+          "michelson-files",
+          JSON.stringify(michFiles)
+        );
+      }
+      store.changeActiveFile(undefined);
+    }
+  };
 </script>
 
 <style>
@@ -257,19 +294,19 @@ code {
       <button
         class="button is-light"
         title="Close current file"
-        on:click={() => {
-          store.updateMichelsonFiles($store.michelsonFiles.map(file => {
-              if (file.name === $store.activeFile) {
-                return { ...file, open: false, active: false };
-              } else {
-                return { ...file, active: false };
-              }
-            }));
-          store.changeActiveFile(undefined);
-          $store.editor.setValue('');
-        }}>
+        on:click={closeCurrentFile}>
         <span class="icon is-small">
           <i class="far fa-window-close" />
+        </span>
+      </button>
+    </div>
+    <div>
+      <button
+        class="button is-light"
+        title="Delete current file"
+        on:click={deleteCurrentFile}>
+        <span class="icon is-small">
+          <i class="far fa-trash-alt" />
         </span>
       </button>
     </div>
