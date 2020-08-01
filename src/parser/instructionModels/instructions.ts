@@ -26,7 +26,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["int", stack[pos].type]);
+      return errorMsg("WRONG_TYPE", ["int", stack[pos].type], "ABS");
     }
   },
   ARITHM: (stack: StackElement[], pos = 0, val): SuccessMsg | ErrorMsg => {
@@ -42,7 +42,8 @@ const instructions = {
         "VALUE_MUST_BE_NUMBER",
         numericValues.includes(stack[pos].type)
           ? stack[pos + 1].type
-          : stack[pos].type
+          : stack[pos].type,
+        val
       );
     }
   },
@@ -75,7 +76,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["pair", stack[pos + 1].type]);
+      return errorMsg("WRONG_TYPE", ["pair", stack[pos + 1].type], "CAR");
     }
   },
   CDR: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -93,7 +94,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["pair", stack[pos + 1].type]);
+      return errorMsg("WRONG_TYPE", ["pair", stack[pos + 1].type], "CDR");
     }
   },
   CONS: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -112,13 +113,14 @@ const instructions = {
           }
         };
       } else {
-        return errorMsg("WRONG_TYPE", [
-          stack[pos + 1].param[0],
-          stack[pos].type
-        ]);
+        return errorMsg(
+          "WRONG_TYPE",
+          [stack[pos + 1].param[0], stack[pos].type],
+          "CONS"
+        );
       }
     } else {
-      return errorMsg("NO_LIST", stack[pos + 1].type);
+      return errorMsg("NO_LIST", stack[pos + 1].type, "CONS");
     }
   },
   COMPARE: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -187,13 +189,21 @@ const instructions = {
             }
           };
         } else {
-          return errorMsg("INVALID_COMPARISON", [el1.type, el2.type]);
+          return errorMsg(
+            "INVALID_COMPARISON",
+            [el1.type, el2.type],
+            "COMPARE"
+          );
         }
       } else {
-        return errorMsg("NOT_COMPARABLE_TYPES", [el1.type, el2.type]);
+        return errorMsg(
+          "NOT_COMPARABLE_TYPES",
+          [el1.type, el2.type],
+          "COMPARE"
+        );
       }
     } else {
-      return errorMsg("STACK_NOT_DEEP_ENOUGH", [1, 2]);
+      return errorMsg("STACK_NOT_DEEP_ENOUGH", [1, 2], "COMPARE");
     }
   },
   CONCAT: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -213,10 +223,11 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", [
-        "string & string",
-        `${stack[pos].type} & ${stack[pos + 1].type}`
-      ]);
+      return errorMsg(
+        "WRONG_TYPE",
+        ["string & string", `${stack[pos].type} & ${stack[pos + 1].type}`],
+        "CONCAT"
+      );
     }
   },
   DROP: (): SuccessMsg => {
@@ -247,7 +258,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["int", stack[pos].type]);
+      return errorMsg("WRONG_TYPE", ["int", stack[pos].type], "EQ");
     }
   },
   FAILWITH: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -263,7 +274,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("STACK_NOT_DEEP_ENOUGH", [0, 1]);
+      return errorMsg("STACK_NOT_DEEP_ENOUGH", [0, 1], "FAILWITH");
     }
   },
   GE: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -279,7 +290,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["int", stack[pos].type]);
+      return errorMsg("WRONG_TYPE", ["int", stack[pos].type], "GE");
     }
   },
   GT: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -295,7 +306,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["int", stack[pos].type]);
+      return errorMsg("WRONG_TYPE", ["int", stack[pos].type], "GT");
     }
   },
   INT: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -311,7 +322,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["nat", stack[pos].type]);
+      return errorMsg("WRONG_TYPE", ["nat", stack[pos].type], "INT");
     }
   },
   LE: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -327,7 +338,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["int", stack[pos].type]);
+      return errorMsg("WRONG_TYPE", ["int", stack[pos].type], "LE");
     }
   },
   LT: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -343,7 +354,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["int", stack[pos].type]);
+      return errorMsg("WRONG_TYPE", ["int", stack[pos].type], "LT");
     }
   },
   NEQ: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
@@ -359,7 +370,7 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("WRONG_TYPE", ["int", stack[pos].type]);
+      return errorMsg("WRONG_TYPE", ["int", stack[pos].type], "NEQ");
     }
   },
   NIL: (val): SuccessMsg => {
@@ -406,7 +417,7 @@ const instructions = {
         element: pair
       };
     } else {
-      return errorMsg("STACK_NOT_DEEP_ENOUGH", [stack.length, 2]);
+      return errorMsg("STACK_NOT_DEEP_ENOUGH", [stack.length, 2], "PAIR");
     }
   },
   PUSH: (data): SuccessMsg | ErrorMsg => {
@@ -414,17 +425,18 @@ const instructions = {
     if (kind === "simple") {
       // FOR SIMPLE TYPES
       if (numericValues.includes(type) && isNaN(value)) {
-        return errorMsg("VALUE_MUST_BE_NUMBER", value);
+        return errorMsg("VALUE_MUST_BE_NUMBER", value, "PUSH");
       } else if (
         type === "string" &&
         (value[0] !== `"` || value[value.length - 1] !== `"`)
       ) {
-        return errorMsg("INCORRECT_STRING", null);
+        return errorMsg("INCORRECT_STRING", null, "PUSH");
       } else if (type === "bool" && value !== "True" && value !== "False") {
-        return errorMsg("WRONG_ARG", [
-          "boolean",
-          isNaN(value) ? "string" : "number"
-        ]);
+        return errorMsg(
+          "WRONG_ARG",
+          ["boolean", isNaN(value) ? "string" : "number"],
+          "PUSH"
+        );
       } else {
         let _value = value;
         if (type === "string") {
@@ -467,9 +479,9 @@ const instructions = {
           const _value = value.match(/\(Some\s(.+)\)/)[1];
           // checks if value is of the specified type
           if (isNaN(_value) && numericValues.includes(param)) {
-            return errorMsg("WRONG_TYPE", [param, "string"]);
+            return errorMsg("WRONG_TYPE", [param, "string"], "PUSH");
           } else if (!isNaN(_value) && !numericValues.includes(param)) {
-            return errorMsg("WRONG_TYPE", [param, "number"]);
+            return errorMsg("WRONG_TYPE", [param, "number"], "PUSH");
           } else {
             return {
               result: "success",
@@ -485,10 +497,10 @@ const instructions = {
             };
           }
         } else {
-          return errorMsg("UNEXPECTED_ARG", value);
+          return errorMsg("UNEXPECTED_ARG", value, "PUSH");
         }
       } else {
-        return errorMsg("UNKNOWN_ERROR", null);
+        return errorMsg("UNKNOWN_ERROR", null, "PUSH");
       }
     }
   },
@@ -526,8 +538,21 @@ const instructions = {
         }
       };
     } else {
-      return errorMsg("SIZE_ERROR", stack[pos].type);
+      return errorMsg("SIZE_ERROR", stack[pos].type, "SIZE");
     }
+  },
+  SOME: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
+    return {
+      result: "success",
+      instruction: "SOME",
+      args: 0,
+      element: {
+        type: "option",
+        value: stack[pos].value,
+        instruction: "SOME",
+        param: [stack[pos].type]
+      }
+    };
   },
   SWAP: (): SuccessMsg => {
     return {

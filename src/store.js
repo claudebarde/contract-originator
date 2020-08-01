@@ -10,7 +10,8 @@ const defaultState = {
   darkMode: false,
   liveCoding: true,
   michelsonFiles: [],
-  activeFile: undefined
+  activeFile: undefined,
+  endOfExecution: undefined
 };
 
 const store = () => {
@@ -62,6 +63,9 @@ const store = () => {
           }
         })
       }));
+    },
+    updateEndOfExecution: state => {
+      update(currentStore => ({ ...currentStore, endOfExecution: state }));
     }
   };
 };

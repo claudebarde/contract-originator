@@ -44,10 +44,10 @@ const instructionTwoArgs = ({
         ];
       }
     } else {
-      return [errorMsg("EMPTY_STACK", opcode)];
+      return [errorMsg("EMPTY_STACK", opcode, opcode)];
     }
   } else {
-    return [errorMsg("INVALID_OPCODE", opcode)];
+    return [errorMsg("INVALID_OPCODE", opcode, opcode)];
   }
 };
 

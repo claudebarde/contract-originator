@@ -8,107 +8,13 @@
   import OriginateModal from "./Modals/OriginateModal.svelte";
   import StackTraceAccordion from "./StackTraceAccordion.svelte";
   import store from "../../store";
-  import generateDefaultStorage from "../../utils/generateDefaultStorage.ts";
+  import { storageFromSchema } from "../../utils/generateDefaultStorage.ts";
   import validateParamStorage from "../../utils/validateParamStorage.ts";
   import typechecker from "../../parser/index.ts";
   import { create as CodeMirror } from "../../codemirror";
   import MenuBar from "./MenuBar.svelte";
   import FileMenu from "./FilesMenu.svelte";
 
-  /*let rawMichelson = `
-storage (big_map :ledger address nat) ;
-parameter (pair (address %to) (nat %tokens)) ;
-code {
-    ## Checks if amount is equal to zero
-    AMOUNT ;
-    PUSH mutez 0 ;
-    IFCMPNEQ
-        { PUSH string "NOAMOUNTALLOWED" ; FAILWITH }
-        {} ;
-    UNPPAIIR ;
-    DUP ;
-    SENDER ;
-    IFCMPEQ
-        { PUSH string "FORBIDDENTRANFER" ; FAILWITH }
-        {} ;
-    ## Checks if source is in the ledger
-    DIG 2 ;
-    DUP ;
-    SENDER ;
-    MEM ;
-    IF
-        {
-            ## Checks if source has enough balance
-            DUP ;
-            SENDER ;
-            GET ;
-            IF_NONE
-                { PUSH string "ERROR" ; FAILWITH }
-                {
-                    DUP ;
-                    DIP 4 { DUP } ;
-                    DIG 4 ;
-                    IFCMPGT { PUSH string "INSUFFICIENTBALANCE" ; FAILWITH } {} ;
-                } ;
-            ## Updates sender's balance
-            DIP 3 { DUP } ;
-            DIG 3 ;
-            SWAP ;
-            SUB ;
-            ABS ;
-            SOME ;
-            SENDER ;
-            UPDATE ;
-            ## Updates recipient's balance
-            DIP { DUP } ;
-            SWAP ;
-            DIP { DUP } ;
-            MEM ;
-            IF
-                {
-                    SWAP ;
-                    DIP { DUP } ;
-                    DUP ;
-                    DIP { SWAP } ;
-                    GET ;
-                    IF_NONE
-                        {
-                            PUSH string "UNKNOWNBALANCE" ; FAILWITH ;
-                        }
-                        {
-                            DIG 3 ;
-                            ADD ;
-                            SOME ;
-                            SWAP ;
-                            UPDATE ;
-                        } ;
-                }
-                {
-                    DUG 2 ;
-                    DIP { SOME } ;
-                    UPDATE ;
-                } ;
-            ## Ends execution
-            NIL operation ;
-            PAIR ;
-        }
-        { PUSH string "UNKNOWNSPENDER" ; FAILWITH } ;
-}`;
-  let rawMichelson = `parameter int ;
-storage int ;
-code {
-    DUP ;
-    CAR ;
-    SWAP ;
-    CDR ;
-    ADD ;
-    PUSH int 6;
-    SWAP;
-    SUB;
-    NIL operation ;
-    PAIR
-}
-`;*/
   let rawMichelson = "";
   let michelsonOutput = "";
   let originateModal = false;
@@ -117,6 +23,7 @@ code {
   let initParameter = "";
   let initStorage = "";
   let validationError = undefined;
+  let errorLineNumber = undefined;
 
   const encode = () => {
     michelsonAction = "encode";
@@ -136,7 +43,7 @@ code {
       const schema = new encoder.Schema(storage);
       const storageStructure = schema.ExtractSchema();
       store.updateStorageStructure(storageStructure);
-      generateDefaultStorage(storageStructure);
+      storageFromSchema(storageStructure);
     } catch (error) {
       console.log(error);
     }
@@ -158,12 +65,35 @@ code {
     );
     if (validation.result) {
       validationError = undefined;
-      stackTraces = [
-        ...(await typechecker(rawMichelson, initParameter, initStorage))
-      ];
+      const typechecking = await typechecker(
+        rawMichelson,
+        initParameter,
+        initStorage
+      );
+      stackTraces = [...typechecking.result];
+      store.updateEndOfExecution(typechecking.endOfExecution);
     } else {
       stackTraces = [];
       validationError = validation.error;
+    }
+  };
+
+  const highlightError = editor => {
+    // removes current highlighted lines
+    if (errorLineNumber) {
+      editor.removeLineClass(errorLineNumber, "background", "error-line");
+    }
+    // highlights error
+    errorLineNumber =
+      parseInt($store.codeStart) + parseInt(stackTraces.length) - 1;
+    // gets line content
+    const errorLine = editor.getLine(errorLineNumber).trim();
+    const errorString = stackTraces.filter(el => el.result === "error")[0]
+      .instruction;
+    const errorRegex = new RegExp(`\\b${errorString}\\b`);
+
+    if (errorRegex.test(errorLine)) {
+      editor.addLineClass(errorLineNumber, "background", "error-line");
     }
   };
 
@@ -184,7 +114,7 @@ code {
       { line: 0, ch: editor.getLine(0).length },
       { css: "background-color: #fe3" }
     );*/
-    editor.on("change", event => {
+    editor.on("change", async event => {
       rawMichelson = editor.getValue();
       // finds line number where Michelson code starts
       let found = false;
@@ -203,7 +133,7 @@ code {
       });
       // typecheck code
       if ($store.liveCoding) {
-        typecheck();
+        await typecheck();
       }
       // saves code in open file
       if ($store.activeFile) {
@@ -227,6 +157,19 @@ code {
             JSON.stringify(filesList)
           );
         }
+      }
+      // change background of line with error
+      if (
+        stackTraces.length > 0 &&
+        stackTraces.filter(trace => trace.result === "error").length > 0
+      ) {
+        highlightError(editor);
+      } else if (errorLineNumber) {
+        // removes current highlighted lines
+        editor.removeLineClass(errorLineNumber, "background", "error-line");
+        /*editor.eachLine(line => {
+          editor.removeLineClass(line, "background", "error-line");
+        });*/
       }
     });
 

@@ -35,7 +35,7 @@ export default async ({
   // splits instruction to find different elements
   instruction = instruction.trim().replace(/ +/g, " ");
   // returns function if no instruction provided
-  if (!instruction) return [errorMsg("NO_INSTRUCTION", null)];
+  if (!instruction) return [errorMsg("NO_INSTRUCTION", null, "NULL")];
 
   /*
    ** CHECKS FOR NO PARAMETER
@@ -126,5 +126,5 @@ export default async ({
     return instructions;
   }
 
-  return [errorMsg("UNKNOWN_ERROR", null)];
+  return [errorMsg("UNKNOWN_ERROR", null, instruction)];
 };

@@ -12,7 +12,7 @@ const simpleTypes: string[] = [
 ];
 let defaultStorage: Storage = {};
 
-export default (schema: Storage) => {
+export const storageFromSchema = (schema: Storage) => {
   console.log(schema);
   const schemaKeys: string[] = Object.keys(schema);
   if (schemaKeys.length === 1 && schemaKeys[0] === "map") {

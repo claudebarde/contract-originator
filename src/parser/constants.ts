@@ -319,6 +319,13 @@ export const instructionSyntax: GeneralSyntax = {
     minStackDepth: 1,
     consumeEl: 1
   },
+  SOME: {
+    emptyStack: false,
+    nbOfArgs: 0,
+    arguments: null,
+    minStackDepth: 1,
+    consumeEl: 1
+  },
   SUB: {
     emptyStack: false,
     nbOfArgs: 0,

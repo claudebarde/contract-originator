@@ -21,18 +21,22 @@ const instructionNoArgs = ({
   if (existingInstructions.includes(instruction)) {
     const syntax: InstructionSyntax = instructionSyntax[instruction];
     // if opcode was not found
-    if (!syntax) return [errorMsg("INVALID_OPCODE", instruction)];
+    if (!syntax) return [errorMsg("INVALID_OPCODE", instruction, instruction)];
 
     if (!syntax.emptyStack && stack.length === 0) {
       // if instruction doesn't work with an empty stack
-      return [errorMsg("EMPTY_STACK", instruction)];
+      return [errorMsg("EMPTY_STACK", instruction, instruction)];
     } else if (syntax.nbOfArgs !== 0 && syntax.argCanBe0 === false) {
       // if instruction can accept 0 arg or 1 number (like `DROP` and `DROP 2`)
-      return [errorMsg("NOT_ENOUGH_ARGS", [syntax.nbOfArgs, 0])];
+      return [errorMsg("NOT_ENOUGH_ARGS", [syntax.nbOfArgs, 0], instruction)];
     } else if (stack.length < syntax.minStackDepth) {
       // verifies that there are enough elements in the stack
       return [
-        errorMsg("STACK_NOT_DEEP_ENOUGH", [stack.length, syntax.minStackDepth])
+        errorMsg(
+          "STACK_NOT_DEEP_ENOUGH",
+          [stack.length, syntax.minStackDepth],
+          instruction
+        )
       ];
     } else {
       if (
@@ -49,11 +53,11 @@ const instructionNoArgs = ({
           return [instructions[instruction](stack, 0)];
         }
       } else {
-        return [errorMsg("UNAVAILABLE_OPCODE", instruction)];
+        return [errorMsg("UNAVAILABLE_OPCODE", instruction, instruction)];
       }
     }
   } else {
-    return [errorMsg("INVALID_OPCODE", instruction)];
+    return [errorMsg("INVALID_OPCODE", instruction, instruction)];
   }
 };
 

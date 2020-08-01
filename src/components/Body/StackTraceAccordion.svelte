@@ -5,57 +5,23 @@
   import prediction from "../../parser/prediction";
   import StackTable from "./StackTable.svelte";
   import store from "../../store";
+  import createDefaultParamStorage from "../../utils/createDefaultParamStorage";
 
-  export let stackTraces,
-    initParameter,
-    initStorage,
-    liveCoding,
-    validationError;
+  export let stackTraces, initParameter, initStorage, validationError;
 
   const dispatch = createEventDispatcher();
   let activeElement = undefined;
   let errorLineNumber = undefined;
 
-  const checkEndOfExecution = (firstEl, lastEl) => {
-    if (!firstEl || !lastEl) return false;
-
-    if (
-      lastEl.type === "pair" &&
-      lastEl.elements.length === 2 &&
-      lastEl.elements[0] &&
-      lastEl.elements[1] &&
-      firstEl.elements[1] &&
-      lastEl.elements[0].type === "list" &&
-      lastEl.elements[0].value === "operation" &&
-      lastEl.elements[1].type === firstEl.elements[1].type
-    ) {
-      return true;
-    } else {
-      return false;
+  const autoParamStorage = () => {
+    const autoValues = createDefaultParamStorage($store.editor.getValue());
+    if (autoValues && !initParameter && !initStorage) {
+      initParameter = autoValues.param;
+      initStorage = autoValues.storage;
+      dispatch("updateParameter", autoValues.param);
+      dispatch("updateStorage", autoValues.storage);
     }
   };
-
-  $: if (stackTraces) {
-    activeElement = undefined;
-
-    if (
-      stackTraces.filter(trace => trace.result !== "error").length > 0 &&
-      stackTraces[stackTraces.length - 1].result == "error"
-    ) {
-      errorLineNumber =
-        parseInt($store.codeStart) + parseInt(stackTraces.length) - 1;
-      $store.editor.addLineClass(errorLineNumber, "background", "error-line");
-    } else if (
-      stackTraces.length > 0 &&
-      stackTraces[stackTraces.length - 1].result === "success" &&
-      errorLineNumber
-    ) {
-      $store.editor.eachLine(line => {
-        $store.editor.removeLineClass(line, "background", "error-line");
-      });
-      errorLineNumber = undefined;
-    }
-  }
 </script>
 
 <style>
@@ -112,7 +78,7 @@
 <div class="stackTrace">
   <div class="feedback">
     <div class="columns is-vcentered" style="width:99%">
-      <div class="column is-6">
+      <div class="column is-5">
         <input
           type="text"
           class="input is-small"
@@ -121,7 +87,7 @@
           value={initParameter}
           on:change={event => dispatch('updateParameter', event.target.value)} />
       </div>
-      <div class="column is-6">
+      <div class="column is-5">
         <input
           type="text"
           class="input is-small"
@@ -129,6 +95,11 @@
           placeholder="Init storage"
           value={initStorage}
           on:change={event => dispatch('updateStorage', event.target.value)} />
+      </div>
+      <div class="column is-2">
+        <button class="button is-info is-small" on:click={autoParamStorage}>
+          Auto
+        </button>
       </div>
     </div>
     {#if validationError}
@@ -143,7 +114,7 @@
         </div>
       </div>
     {/if}
-    {#if liveCoding && stackTraces.length > 0 && stackTraces[stackTraces.length - 1].result !== 'error'}
+    {#if $store.liveCoding && stackTraces.length > 0 && stackTraces[stackTraces.length - 1].result !== 'error'}
       {#if stackTraces.length > 1}
         <div class="columns">
           <div class="column is-half">
@@ -159,7 +130,7 @@
       {:else}
         <StackTable title="Stack State" tracePos="1" {stackTraces} />
       {/if}
-    {:else if liveCoding && stackTraces.length > 0 && stackTraces[stackTraces.length - 1].result === 'error' && stackTraces[stackTraces.length - 2]}
+    {:else if $store.liveCoding && stackTraces.length > 0 && stackTraces[stackTraces.length - 1].result === 'error' && stackTraces[stackTraces.length - 2]}
       <StackTable title="Previous Stack State" tracePos="2" {stackTraces} />
     {:else}
       <p>No stack information available</p>
@@ -176,6 +147,10 @@
                 <p>Did you mean: "{value.opcode}"?</p>
               {/if}
             {/await}
+          {:else if stackTraces.filter(el => el.result === 'error')[0].id === 'UNKNOWN_ERROR'}
+            <p>
+              Error triggered by: {stackTraces.filter(el => el.result === 'error')[0].instruction}
+            </p>
           {/if}
         </div>
       </div>
@@ -183,7 +158,7 @@
   </div>
   <hr />
   <div class="instructions-accordion">
-    {#if stackTraces.length > 2 && checkEndOfExecution(stackTraces[0].element, stackTraces[stackTraces.length - 1].element)}
+    {#if $store.endOfExecution}
       <div>
         <p>End of execution</p>
         <p>Number of instructions: {stackTraces.length}</p>
@@ -193,9 +168,9 @@
       <button
         class="accordion"
         class:active={activeElement === index}
-        class:has-background-success={trace.result === 'success' && (index !== stackTraces.length - 1 || !checkEndOfExecution(stackTraces[0].element, trace.element))}
+        class:has-background-success={trace.result === 'success' && (index !== stackTraces.length - 1 || !$store.endOfExecution)}
         class:has-background-danger={trace.result === 'error'}
-        class:has-background-info={trace.result === 'success' && index === stackTraces.length - 1 && checkEndOfExecution(stackTraces[0].element, trace.element)}
+        class:has-background-info={trace.result === 'success' && $store.endOfExecution}
         on:click={() => {
           if (activeElement !== index) {
             activeElement = index;

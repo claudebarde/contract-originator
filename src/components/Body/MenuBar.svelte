@@ -283,6 +283,16 @@ code {
     <button
       class="button is-light"
       title="Erase the current code"
+      on:click={() => dispatch('typecheck')}>
+      <span class="icon is-small">
+        <i class="fas fa-laptop-code" />
+      </span>
+    </button>
+  </div>
+  <div>
+    <button
+      class="button is-light"
+      title="Erase the current code"
       on:click={() => $store.editor.setValue('')}>
       <span class="icon is-small">
         <i class="fas fa-eraser" />

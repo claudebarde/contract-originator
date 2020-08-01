@@ -28,8 +28,9 @@ export interface ErrorMsg {
   result: "error";
   msg: string;
   id: string;
+  value: string;
+  instruction: string;
   stackState?: StackElement[];
-  value?: string;
 }
 
 export interface SuccessMsg {
@@ -38,7 +39,7 @@ export interface SuccessMsg {
   args: number;
   value?: number; // for removing instruction, may be element position or amount of elements
   element?: StackElement; // element to be added to the stack
-  stackState?: StackElement[] | string;
+  stackState?: StackElement[];
 }
 
 export interface ArithmeticFuncArg {
