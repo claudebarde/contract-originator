@@ -113,7 +113,6 @@ export default async ({
    */
   regex = new RegExp(opcodeConditional);
   const conditional = instruction.match(regex);
-  console.log(conditional);
   if (conditional) {
     let instructions: (ErrorMsg | SuccessMsg)[];
     // simple IF condition
@@ -136,8 +135,6 @@ export default async ({
         stack
       });
     }
-
-    console.log(instructions);
 
     return instructions;
   }

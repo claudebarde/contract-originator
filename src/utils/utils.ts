@@ -2,9 +2,11 @@ import { existingInstructions } from "../parser/constants";
 
 export const splitInstructions = (code: string): string[] => {
   const regex = new RegExp(
-    `(${existingInstructions.join("|")})(\\s*;|(.*);)`,
+    `(${existingInstructions.join("|")})(\\s*;|.*\\}|.*?;)`,
     "g"
   );
+  // (\\s*;|\\s+\\{.*\\}|.*?;)
+  // (\\s*;|.*;|.*})
 
   return [
     ...code
@@ -12,12 +14,12 @@ export const splitInstructions = (code: string): string[] => {
       .replace(/\r?\n|\r/g, "")
       .replace(/\s+/g, " ")
       .matchAll(regex)
-  ].map(result => result[0].trim().slice(0, -1).trim());
-
-  /*return code
-    .trim()
-    .replace(/\r?\n|\r/g, "")
-    .split(";")
-    .filter(el => el)
-    .map(instr => instr.trim().replace(/\s+/g, " "));*/
+  ].map(result => {
+    let instruction = result[0].trim();
+    if (instruction.slice(-1) === ";") {
+      return instruction.slice(0, -1).trim();
+    } else {
+      return instruction;
+    }
+  });
 };

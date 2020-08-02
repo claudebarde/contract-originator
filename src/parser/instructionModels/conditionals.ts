@@ -42,14 +42,22 @@ const conditionals = async ({
         ];
         if (topOfStack.value === "true") {
           // if TRUE
-          splitInstructions(ifTrue).forEach(async instruction => {
+          const str =
+            ifTrue.trim()[ifTrue.trim().length - 1] === ";"
+              ? ifTrue
+              : ifTrue + ";";
+          splitInstructions(str).forEach(async instruction => {
             const result = await parser({ instruction, stack });
             stack = result[0].stackState;
             results.push(result[0]);
           });
         } else {
           // if FALSE
-          splitInstructions(ifFalse).forEach(async instruction => {
+          const str =
+            ifFalse.trim()[ifFalse.trim().length - 1] === ";"
+              ? ifFalse
+              : ifFalse + ";";
+          splitInstructions(str).forEach(async instruction => {
             const result = await parser({ instruction, stack });
             stack = result[0].stackState;
             results.push(result[0]);
