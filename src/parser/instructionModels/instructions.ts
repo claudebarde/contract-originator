@@ -309,6 +309,9 @@ const instructions = {
       return errorMsg("WRONG_TYPE", ["int", stack[pos].type], "GT");
     }
   },
+  IF: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
+    return errorMsg("UNKNOWN_ERROR", "IF", "IF");
+  },
   INT: (stack: StackElement[], pos = 0): SuccessMsg | ErrorMsg => {
     if (stack[pos].type === "nat") {
       return {

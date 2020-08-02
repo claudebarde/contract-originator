@@ -1,6 +1,7 @@
 import parser from "./parser";
 import { SuccessMsg, ErrorMsg, StackElement } from "./interfaces";
 import { instructionSyntax } from "./constants";
+import { splitInstructions } from "../utils/utils";
 
 export default async (
   michelson: string,
@@ -23,55 +24,26 @@ export default async (
   // initializes empty stack
   let stack: StackElement[] = [];
   // separates storage, parameter and code
-  let matchMichelsonCode = michelson
-    .trim()
-    .replace(/##.*/g, "")
-    .replace(/\r?\n|\r/g, "")
-    .replace(/\s+/g, " ")
-    .match(/storage(.*);parameter(.*);code\s*\{(.*)\}/);
-  // if no match
-  if (!matchMichelsonCode) {
-    // checks if storage and parameter are not reversed
-    matchMichelsonCode = michelson
-      .replace(/\r?\n|\r/g, "")
-      .replace(/\s+/g, " ")
-      .match(/parameter(.*);storage(.*);code\s*\{(.*)\}/);
-
-    if (!matchMichelsonCode)
-      return {
-        result: [
-          {
-            result: "error",
-            msg: "Invalid Michelson contract",
-            id: "0",
-            value: "ERROR",
-            instruction: "NULL"
-          }
-        ],
-        endOfExecution: false
-      };
-  }
-
   let storage: string;
   let parameter: string;
   let code: string;
-  if (matchMichelsonCode[0].slice(0, 7) === "storage") {
-    storage = matchMichelsonCode[1].trim();
-    parameter = matchMichelsonCode[2].trim();
-    code = matchMichelsonCode[3];
-  } else {
-    parameter = matchMichelsonCode[1].trim();
-    storage = matchMichelsonCode[2].trim();
-    code = matchMichelsonCode[3];
+
+  const matchStorage = michelson.match(/storage(.*);/);
+  if (matchStorage) {
+    storage = matchStorage[1].trim();
+  }
+  const matchParameter = michelson.match(/parameter(.*);/);
+  if (matchParameter) {
+    parameter = matchParameter[1].trim();
+  }
+  const matchCode = michelson.match(/code\s*\{(.*)\}/s);
+  if (matchCode) {
+    code = matchCode[1].trim();
   }
 
   let resultStack: (SuccessMsg | ErrorMsg)[] = [];
   // separates instructions
-  const instructions: string[] = code
-    .trim()
-    .split(";")
-    .filter(el => el)
-    .map(instr => instr.trim());
+  const instructions: string[] = splitInstructions(code);
   // formats init parameter and storage
   let [initParameterType, initParameterValue] = initParameter.split(" ");
   let [initStorageType, initStorageValue] = initStorage.split(" ");
@@ -101,35 +73,38 @@ export default async (
       instruction: instructions[i],
       stack
     });
-
-    if (parsedInstr[0].result === "error") {
-      resultStack.push({ ...parsedInstr[0], stackState: stack });
-      break;
-    } else {
-      // checks if element(s) must be removed from the stack
-      const elsToConsume: number =
-        instructionSyntax[parsedInstr[0].instruction].consumeEl;
-      for (let j = 0; j < elsToConsume; j++) {
-        // removes elements
-        stack.shift();
-      }
-      // if instruction adds element to the stack
-      if (parsedInstr[0].element) {
-        stack = [parsedInstr[0].element, ...stack];
+    // loops through results
+    for (let k = 0; k < parsedInstr.length; k++) {
+      if (parsedInstr[k].result === "error") {
+        resultStack.push({ ...parsedInstr[k], stackState: stack });
+        break;
       } else {
-        // if instruction manipulates the stack
-        if (parsedInstr[0].instruction === "SWAP") {
-          const el1 = stack[0];
-          const el2 = stack[1];
-          // pops first 2 elements of stack
+        const success = parsedInstr[k] as SuccessMsg;
+        // checks if element(s) must be removed from the stack
+        const elsToConsume: number =
+          instructionSyntax[success.instruction].consumeEl;
+        for (let j = 0; j < elsToConsume; j++) {
+          // removes elements
           stack.shift();
-          stack.shift();
-          // switches elements and inserts them back in the stack
-          stack = [el2, el1, ...stack];
         }
+        // if instruction adds element to the stack
+        if (success.element) {
+          stack = [success.element, ...stack];
+        } else {
+          // if instruction manipulates the stack
+          if (success.instruction === "SWAP") {
+            const el1 = stack[0];
+            const el2 = stack[1];
+            // pops first 2 elements of stack
+            stack.shift();
+            stack.shift();
+            // switches elements and inserts them back in the stack
+            stack = [el2, el1, ...stack];
+          }
+        }
+        // pushes result
+        resultStack.push({ ...success, stackState: [...stack] });
       }
-      // pushes result
-      resultStack.push({ ...parsedInstr[0], stackState: [...stack] });
     }
   }
 

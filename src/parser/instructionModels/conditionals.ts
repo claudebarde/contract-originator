@@ -1,6 +1,16 @@
 import errorMsg from "../errors";
 import parser from "../parser";
 import { ErrorMsg, SuccessMsg, StackElement } from "../interfaces";
+import { splitInstructions } from "../../utils/utils";
+
+interface parameter {
+  instruction: string;
+  condition: string;
+  details: string | null;
+  ifTrue: string;
+  ifFalse: string;
+  stack: StackElement[];
+}
 
 const conditionals = async ({
   instruction,
@@ -9,13 +19,47 @@ const conditionals = async ({
   ifTrue,
   ifFalse,
   stack
-}): Promise<(ErrorMsg | SuccessMsg)[]> => {
+}: parameter): Promise<(ErrorMsg | SuccessMsg)[]> => {
   // PUSH (option int) (None)
   // IF_NONE {PUSH int 6; PUSH int 7 ; ADD} { PUSH string "Sorry!" ; FAILWITH }
 
   if (condition === "IF") {
     // IF condition
-    if (details === "SOME" || details === "NONE") {
+    if (details === null) {
+      // simple IF condition
+      // checks if there is an element of type bool on top of the stack
+      const topOfStack: StackElement = stack[0];
+      stack.shift();
+      if (topOfStack.type === "bool") {
+        // evaluates the condition
+        let results: (ErrorMsg | SuccessMsg)[] = [
+          {
+            result: "success",
+            instruction: "IF",
+            args: 2,
+            stackState: stack
+          }
+        ];
+        if (topOfStack.value === "true") {
+          // if TRUE
+          splitInstructions(ifTrue).forEach(async instruction => {
+            const result = await parser({ instruction, stack });
+            stack = result[0].stackState;
+            results.push(result[0]);
+          });
+        } else {
+          // if FALSE
+          splitInstructions(ifFalse).forEach(async instruction => {
+            const result = await parser({ instruction, stack });
+            stack = result[0].stackState;
+            results.push(result[0]);
+          });
+        }
+        return results;
+      } else {
+        return [errorMsg("WRONG_TYPE", ["bool", topOfStack.type], instruction)];
+      }
+    } else if (details === "SOME" || details === "NONE") {
       // optional value
       // checks if element on top of the stack is an optional
       if (stack[0].type === "option") {
@@ -72,15 +116,15 @@ const conditionals = async ({
 
         return [drop, ...elements.flat()];
       } else {
-        return [errorMsg("WRONG_TYPE", ["option", stack[0].type])];
+        return [errorMsg("WRONG_TYPE", ["option", stack[0].type], instruction)];
       }
     } else {
-      return [errorMsg("UNKNOWN_ERROR", null)];
+      return [errorMsg("UNKNOWN_ERROR", null, instruction)];
     }
   } else if (condition === "ASSERT") {
     // ASSERT condition
   } else {
-    return [errorMsg("UNKNOWN_ERROR", null)];
+    return [errorMsg("UNKNOWN_ERROR", null, instruction)];
   }
 };
 

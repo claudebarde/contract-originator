@@ -199,6 +199,10 @@
                     <tr>
                       <td>{element.type} {element.value}</td>
                     </tr>
+                  {:else}
+                    <tr>
+                      <td>Empty</td>
+                    </tr>
                   {/each}
                 </tbody>
               </table>

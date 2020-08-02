@@ -65,6 +65,48 @@
     );
     if (validation.result) {
       validationError = undefined;
+      // builds lines of code into an array
+      /*let linesOfCode = [];
+      $store.editor.eachLine(
+        $store.codeStart,
+        $store.editor.lastLine() + 1,
+        line => {
+          if (line.text.trim() === "}") {
+            return;
+          } else if (
+            line.text.trim()[line.text.trim().length - 1] === "}" &&
+            $store.editor.getLineNumber(line) === $store.editor.lastLine()
+          ) {
+            linesOfCode.push(
+              line.text
+                .replace(";", "")
+                .trim()
+                .slice(0, -1)
+                .trim()
+            );
+          } else {
+            linesOfCode.push(line.text.replace(";", "").trim());
+          }
+        }
+      );
+      // rearranges array to put IF argument in the same field
+      let indicesToRemove = [];
+      linesOfCode = linesOfCode.map((instruction, index) => {
+        if (["IF"].includes(instruction) && index + 3 <= linesOfCode.length) {
+          indicesToRemove.push(index + 1);
+          indicesToRemove.push(index + 2);
+          return `${instruction} ${linesOfCode[index + 1]} ${
+            linesOfCode[index + 2]
+          }`;
+        }
+
+        if (indicesToRemove.includes(index)) {
+          return;
+        } else {
+          return instruction;
+        }
+      });
+      console.log(linesOfCode);*/
       const typechecking = await typechecker(
         rawMichelson,
         initParameter,

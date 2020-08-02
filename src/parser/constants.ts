@@ -239,6 +239,14 @@ export const instructionSyntax: GeneralSyntax = {
     minStackDepth: 1,
     consumeEl: 2
   },
+  IF: {
+    emptyStack: false,
+    nbOfArgs: 2,
+    argCanBe0: false,
+    arguments: ["true", "false"],
+    minStackDepth: 1,
+    consumeEl: 1
+  },
   INT: {
     emptyStack: false,
     nbOfArgs: 0,

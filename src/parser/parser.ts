@@ -23,7 +23,7 @@ const opcode3ElsComplexType = `^(${existingInstructions.join(
   "|"
 )})\\s+\\((${complexTypes.join("|")})\\s(${simpleTypes.join("|")})\\)\\s+(.+)$`;
 // REGEX TO DETECT CONDITIONAL WITH IF OR ASSERT
-const opcodeConditional = `^(IF|ASSERT)_?([A-Z]+)\\s*\\{\\s*(.*)\\s*\\}\\s*\\{\\s*(.*)\\s*\\}`;
+const opcodeConditional = `^((IF|ASSERT)_?([A-Z]+)|IF)\\s*\\{\\s*(.*)\\s*\\}\\s*\\{\\s*(.*)\\s*\\}`;
 
 export default async ({
   instruction,
@@ -113,15 +113,31 @@ export default async ({
    */
   regex = new RegExp(opcodeConditional);
   const conditional = instruction.match(regex);
+  console.log(conditional);
   if (conditional) {
-    const instructions: (ErrorMsg | SuccessMsg)[] = await conditionals({
-      instruction: conditional[0],
-      condition: conditional[1],
-      details: conditional[2],
-      ifTrue: conditional[3],
-      ifFalse: conditional[4],
-      stack
-    });
+    let instructions: (ErrorMsg | SuccessMsg)[];
+    // simple IF condition
+    if (conditional[1] === "IF") {
+      instructions = await conditionals({
+        instruction: conditional[0],
+        condition: conditional[1],
+        details: null,
+        ifTrue: conditional[4].trim(),
+        ifFalse: conditional[5].trim(),
+        stack
+      });
+    } else {
+      instructions = await conditionals({
+        instruction: conditional[0],
+        condition: conditional[1],
+        details: conditional[3],
+        ifTrue: conditional[4],
+        ifFalse: conditional[5],
+        stack
+      });
+    }
+
+    console.log(instructions);
 
     return instructions;
   }
