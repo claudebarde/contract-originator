@@ -1,7 +1,7 @@
 import parser from "./parser";
 import { SuccessMsg, ErrorMsg, StackElement } from "./interfaces";
 import { instructionSyntax } from "./constants";
-import { splitInstructions } from "../utils/utils";
+import { splitInstructions, updateStack } from "../utils/utils";
 
 export default async (
   michelson: string,
@@ -81,27 +81,7 @@ export default async (
       } else {
         const success = parsedInstr[k] as SuccessMsg;
         // checks if element(s) must be removed from the stack
-        const elsToConsume: number =
-          instructionSyntax[success.instruction].consumeEl;
-        for (let j = 0; j < elsToConsume; j++) {
-          // removes elements
-          stack.shift();
-        }
-        // if instruction adds element to the stack
-        if (success.element) {
-          stack = [success.element, ...stack];
-        } else {
-          // if instruction manipulates the stack
-          if (success.instruction === "SWAP") {
-            const el1 = stack[0];
-            const el2 = stack[1];
-            // pops first 2 elements of stack
-            stack.shift();
-            stack.shift();
-            // switches elements and inserts them back in the stack
-            stack = [el2, el1, ...stack];
-          }
-        }
+        stack = [...updateStack(stack, success)];
         // pushes result
         resultStack.push({ ...success, stackState: [...stack] });
       }

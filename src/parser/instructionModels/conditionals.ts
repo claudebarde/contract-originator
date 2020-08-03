@@ -1,7 +1,7 @@
 import errorMsg from "../errors";
 import parser from "../parser";
 import { ErrorMsg, SuccessMsg, StackElement } from "../interfaces";
-import { splitInstructions } from "../../utils/utils";
+import { splitInstructions, updateStack } from "../../utils/utils";
 
 interface parameter {
   instruction: string;
@@ -48,7 +48,10 @@ const conditionals = async ({
               : ifTrue + ";";
           splitInstructions(str).forEach(async instruction => {
             const result = await parser({ instruction, stack });
-            stack = result[0].stackState;
+            // if an element is returned
+            if (result[0].result === "success") {
+              stack.push(result[0].element);
+            }
             results.push(result[0]);
           });
         } else {
@@ -57,11 +60,19 @@ const conditionals = async ({
             ifFalse.trim()[ifFalse.trim().length - 1] === ";"
               ? ifFalse
               : ifFalse + ";";
-          splitInstructions(str).forEach(async instruction => {
-            const result = await parser({ instruction, stack });
-            stack = result[0].stackState;
+          const instructions = splitInstructions(str);
+          for (let i = 0; i < instructions.length; i++) {
+            const result = await parser({
+              instruction: instructions[i],
+              stack
+            });
+            // if an element is returned
+            if (result[0].result === "success" && result[0].element) {
+              //stack = [result[0].element, ...stack];
+              stack = [...updateStack(stack, result[0])];
+            }
             results.push(result[0]);
-          });
+          }
         }
         return results;
       } else {

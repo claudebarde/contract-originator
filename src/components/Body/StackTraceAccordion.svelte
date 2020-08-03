@@ -114,6 +114,26 @@
         </div>
       </div>
     {/if}
+    {#if stackTraces.filter(el => el.result === 'error').length > 0}
+      <div class="message is-small is-danger">
+        <div class="message-body">
+          <p>Error: {stackTraces.filter(el => el.result === 'error')[0].msg}</p>
+          {#if stackTraces.filter(el => el.result === 'error')[0].id === 'INVALID_OPCODE'}
+            {#await prediction(stackTraces.filter(el => el.result === 'error')[0].value)}
+              <!-- promise is pending -->
+            {:then value}
+              {#if value}
+                <p>Did you mean: "{value.opcode}"?</p>
+              {/if}
+            {/await}
+          {:else if stackTraces.filter(el => el.result === 'error')[0].id === 'UNKNOWN_ERROR'}
+            <p>
+              Error triggered by: {stackTraces.filter(el => el.result === 'error')[0].instruction}
+            </p>
+          {/if}
+        </div>
+      </div>
+    {/if}
     {#if $store.liveCoding && stackTraces.length > 0 && stackTraces[stackTraces.length - 1].result !== 'error'}
       {#if stackTraces.length > 1}
         <div class="columns">
@@ -134,26 +154,6 @@
       <StackTable title="Previous Stack State" tracePos="2" {stackTraces} />
     {:else}
       <p>No stack information available</p>
-    {/if}
-    {#if stackTraces.filter(el => el.result === 'error').length > 0}
-      <div class="message is-small is-danger">
-        <div class="message-body">
-          <p>Error: {stackTraces.filter(el => el.result === 'error')[0].msg}</p>
-          {#if stackTraces.filter(el => el.result === 'error')[0].id === 'INVALID_OPCODE'}
-            {#await prediction(stackTraces.filter(el => el.result === 'error')[0].value)}
-              <!-- promise is pending -->
-            {:then value}
-              {#if value}
-                <p>Did you mean: "{value.opcode}"?</p>
-              {/if}
-            {/await}
-          {:else if stackTraces.filter(el => el.result === 'error')[0].id === 'UNKNOWN_ERROR'}
-            <p>
-              Error triggered by: {stackTraces.filter(el => el.result === 'error')[0].instruction}
-            </p>
-          {/if}
-        </div>
-      </div>
     {/if}
   </div>
   <hr />
