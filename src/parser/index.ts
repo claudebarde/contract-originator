@@ -1,7 +1,7 @@
 import parser from "./parser";
 import { SuccessMsg, ErrorMsg, StackElement } from "./interfaces";
-import { instructionSyntax } from "./constants";
 import { splitInstructions, updateStack } from "../utils/utils";
+import checkMacros from "./instructionModels/macros";
 
 export default async (
   michelson: string,
@@ -41,9 +41,12 @@ export default async (
     code = matchCode[1].trim();
   }
 
+  // unfolds macros
+  code = checkMacros(code);
+
   let resultStack: (SuccessMsg | ErrorMsg)[] = [];
   // separates instructions
-  const instructions: string[] = splitInstructions(code);
+  let instructions: string[] = splitInstructions(code);
   // formats init parameter and storage
   let [initParameterType, initParameterValue] = initParameter.split(" ");
   let [initStorageType, initStorageValue] = initStorage.split(" ");

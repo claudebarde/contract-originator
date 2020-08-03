@@ -19,6 +19,11 @@ code {
     NIL operation ;
     PAIR
 }`;
+  const mapCode = `parameter (pair string nat) ;
+storage (map string nat) ;
+code {
+	UNPAIR ;
+}`;
 
   const loadCode = async (param, isAddress) => {
     let code;
@@ -29,7 +34,9 @@ code {
       code = param;
     }
 
+    closeCurrentFile();
     $store.editor.setValue(code);
+    dispatch("codeloaded");
   };
 
   const closeCurrentFile = () => {
@@ -145,7 +152,14 @@ code {
         <a href="#/" class="dropdown-item">Strings concatenation</a>
         <hr class="dropdown-divider" />
         <a href="#/" class="dropdown-item">Lists</a>
-        <a href="#/" class="dropdown-item">Maps</a>
+        <a
+          href="#/"
+          class="dropdown-item"
+          on:click|preventDefault={() => {
+            loadCode(mapCode, false);
+          }}>
+          Maps
+        </a>
         <hr class="dropdown-divider" />
         <a
           href="/"

@@ -264,29 +264,12 @@
 </style>
 
 <div class="hero-body">
-  <!-- <div class="columns">
-      <div class="column is-full">
-        <div class="buttons is-centered">
-          <button class="button is-light" on:click={typecheck}>
-            Typecheck
-          </button>
-          <button class="button is-link" on:click={encode}>Encode</button>
-          <SelectNetwork {Tezos} />
-          {#if $store.network && $store.userAddress}
-            <button class="button is-primary">Connected!</button>
-          {:else}
-            <ConnectWallet {Tezos} />
-          {/if}
-          <button
-            class="button is-warning"
-            on:click={() => (originateModal = !originateModal)}
-            disabled={!$store.network || !$store.userAddress || !$store.encodedMichelson}>
-            Originate
-          </button>
-        </div>
-      </div>
-    </div> -->
-  <MenuBar on:typecheck={typecheck} />
+  <MenuBar
+    on:typecheck={typecheck}
+    on:codeloaded={() => {
+      initParameter = '';
+      initStorage = '';
+    }} />
   <div class="columns is-gapless michelson-columns">
     <div class="column is-half michelson-column">
       <textarea id="michelson-editor" bind:value={rawMichelson} />

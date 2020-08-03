@@ -4,6 +4,8 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["es2020"],
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   }
 }
